@@ -1,0 +1,142 @@
+{
+ "jobs": [
+  {
+   "absolute_url": "https://job-boards.eu.greenhouse.io/tripledotstudios/jobs/4988619101",
+   "data_compliance": [],
+   "internal_job_id": 4528008101,
+   "location": {
+    "name": "London"
+   },
+   "metadata": [
+    {
+     "id": 13029990101,
+     "name": "Studio",
+     "value": "Puzzleplay",
+     "value_type": "single_select"
+    }
+   ],
+   "id": 4988619101,
+   "updated_at": "2026-09-28T09:48:26-04:00",
+   "requisition_id": "225",
+   "title": "Data Analyst",
+   "company_name": "Tripledot Studios",
+   "first_published": "2026-09-28T09:48:26-04:00",
+   "language": "en",
+   "application_deadline": null,
+   "content": "&lt;div class=&quot;content-intro&quot;&gt;&lt;h2&gt;&lt;span style=&quot;font-family: verdana, geneva, sans-serif;&quot;&gt;&lt;strong&gt;Who are we?&lt;/strong&gt;&lt;/span&gt;&lt;/h2&gt;\n&lt;p&gt;&lt;span style=&quot;font-family: verdana, geneva, sans-serif;&quot;&gt;&lt;strong&gt;Tripledot&lt;/strong&gt; &lt;strong&gt;Studios&lt;/strong&gt; is one of the largest independent mobile games companies in the world.&lt;/span&gt;&lt;/p&gt;\n&lt;p&gt;&lt;span style=&quot;font-family: verdana, geneva, sans-serif;&quot;&gt;We are a multi-award-winning organisation, with a global 2,500+ strong team across 12 studios.&lt;/span&gt;&lt;/p&gt;\n&lt;p&gt;&lt;span style=&quot;font-family: verdana, geneva, sans-serif;&quot;&gt;Our expanded portfolio includes some of the biggest titles in mobile gaming, collectively reaching top chart positions around the world and engaging over 25 million daily active users.&lt;/span&gt;&lt;/p&gt;\n&lt;p&gt;&lt;span style=&quot;font-family: verdana, geneva, sans-serif;&quot;&gt;Tripledot’s guiding principle is that when people love what they do, what they do will be loved by others.&lt;/span&gt;&lt;/p&gt;\n&lt;p&gt;&lt;span style=&quot;font-family: verdana, geneva, sans-serif;&quot;&gt;We’re building a company we’re proud of. One filled with driven, incredibly smart and detail-orientated people, who &lt;strong&gt;LOVE&lt;/strong&gt; making games.&lt;/span&gt;&lt;/p&gt;\n&lt;p&gt;&lt;span style=&quot;font-family: verdana, geneva, sans-serif;&quot;&gt;Our ambitio",
+   "departments": [
+    {
+     "id": 4062959101,
+     "name": "Data Analysis",
+     "child_ids": [],
+     "parent_id": 4062956101
+    }
+   ],
+   "offices": [
+    {
+     "id": 4057649101,
+     "name": "Puzzleplay - Warsaw",
+     "location": "Warsaw, Mazowieckie, Poland",
+     "child_ids": [],
+     "parent_id": 4057647101
+    }
+   ],
+   "ai_disclaimer": null,
+   "include_ai_disclaimer": null,
+   "ai_opt_out_request_url": null
+  },
+  {
+   "absolute_url": "https://job-boards.eu.greenhouse.io/tripledotstudios/jobs/4988633101",
+   "data_compliance": [],
+   "internal_job_id": 4528008101,
+   "location": {
+    "name": "Minsk"
+   },
+   "metadata": [
+    {
+     "id": 13029990101,
+     "name": "Studio",
+     "value": "Puzzleplay",
+     "value_type": "single_select"
+    }
+   ],
+   "id": 4988633101,
+   "updated_at": "2026-09-28T09:53:45-04:00",
+   "requisition_id": "225",
+   "title": "Data Analyst",
+   "company_name": "Tripledot Studios",
+   "first_published": "2026-09-28T09:53:45-04:00",
+   "language": "en",
+   "application_deadline": null,
+   "content": "&lt;div class=&quot;content-intro&quot;&gt;&lt;h2&gt;&lt;span style=&quot;font-family: verdana, geneva, sans-serif;&quot;&gt;&lt;strong&gt;Who are we?&lt;/strong&gt;&lt;/span&gt;&lt;/h2&gt;\n&lt;p&gt;&lt;span style=&quot;font-family: verdana, geneva, sans-serif;&quot;&gt;&lt;strong&gt;Tripledot&lt;/strong&gt; &lt;strong&gt;Studios&lt;/strong&gt; is one of the largest independent mobile games companies in the world.&lt;/span&gt;&lt;/p&gt;\n&lt;p&gt;&lt;span style=&quot;font-family: verdana, geneva, sans-serif;&quot;&gt;We are a multi-award-winning organisation, with a global 2,500+ strong team across 12 studios.&lt;/span&gt;&lt;/p&gt;\n&lt;p&gt;&lt;span style=&quot;font-family: verdana, geneva, sans-serif;&quot;&gt;Our expanded portfolio includes some of the biggest titles in mobile gaming, collectively reaching top chart positions around the world and engaging over 25 million daily active users.&lt;/span&gt;&lt;/p&gt;\n&lt;p&gt;&lt;span style=&quot;font-family: verdana, geneva, sans-serif;&quot;&gt;Tripledot’s guiding principle is that when people love what they do, what they do will be loved by others.&lt;/span&gt;&lt;/p&gt;\n&lt;p&gt;&lt;span style=&quot;font-family: verdana, geneva, sans-serif;&quot;&gt;We’re building a company we’re proud of. One filled with driven, incredibly smart and detail-orientated people, who &lt;strong&gt;LOVE&lt;/strong&gt; making games.&lt;/span&gt;&lt;/p&gt;\n&lt;p&gt;&lt;span style=&quot;font-family: verdana, geneva, sans-serif;&quot;&gt;Our ambitio",
+   "departments": [
+    {
+     "id": 4062959101,
+     "name": "Data Analysis",
+     "child_ids": [],
+     "parent_id": 4062956101
+    }
+   ],
+   "offices": [
+    {
+     "id": 4057649101,
+     "name": "Puzzleplay - Warsaw",
+     "location": "Warsaw, Mazowieckie, Poland",
+     "child_ids": [],
+     "parent_id": 4057647101
+    }
+   ],
+   "ai_disclaimer": null,
+   "include_ai_disclaimer": null,
+   "ai_opt_out_request_url": null
+  },
+  {
+   "absolute_url": "https://job-boards.eu.greenhouse.io/tripledotstudios/jobs/4988634101",
+   "data_compliance": [],
+   "internal_job_id": 4528008101,
+   "location": {
+    "name": "Minsk"
+   },
+   "metadata": [
+    {
+     "id": 13029990101,
+     "name": "Studio",
+     "value": "Puzzleplay",
+     "value_type": "single_select"
+    }
+   ],
+   "id": 4988634101,
+   "updated_at": "2026-09-28T09:53:43-04:00",
+   "requisition_id": "225",
+   "title": "Fraud Analyst",
+   "company_name": "Tripledot Studios",
+   "first_published": "2026-09-28T09:53:43-04:00",
+   "language": "en",
+   "application_deadline": null,
+   "content": "&lt;div class=&quot;content-intro&quot;&gt;&lt;h2&gt;&lt;span style=&quot;font-family: verdana, geneva, sans-serif;&quot;&gt;&lt;strong&gt;Who are we?&lt;/strong&gt;&lt;/span&gt;&lt;/h2&gt;\n&lt;p&gt;&lt;span style=&quot;font-family: verdana, geneva, sans-serif;&quot;&gt;&lt;strong&gt;Tripledot&lt;/strong&gt; &lt;strong&gt;Studios&lt;/strong&gt; is one of the largest independent mobile games companies in the world.&lt;/span&gt;&lt;/p&gt;\n&lt;p&gt;&lt;span style=&quot;font-family: verdana, geneva, sans-serif;&quot;&gt;We are a multi-award-winning organisation, with a global 2,500+ strong team across 12 studios.&lt;/span&gt;&lt;/p&gt;\n&lt;p&gt;&lt;span style=&quot;font-family: verdana, geneva, sans-serif;&quot;&gt;Our expanded portfolio includes some of the biggest titles in mobile gaming, collectively reaching top chart positions around the world and engaging over 25 million daily active users.&lt;/span&gt;&lt;/p&gt;\n&lt;p&gt;&lt;span style=&quot;font-family: verdana, geneva, sans-serif;&quot;&gt;Tripledot’s guiding principle is that when people love what they do, what they do will be loved by others.&lt;/span&gt;&lt;/p&gt;\n&lt;p&gt;&lt;span style=&quot;font-family: verdana, geneva, sans-serif;&quot;&gt;We’re building a company we’re proud of. One filled with driven, incredibly smart and detail-orientated people, who &lt;strong&gt;LOVE&lt;/strong&gt; making games.&lt;/span&gt;&lt;/p&gt;\n&lt;p&gt;&lt;span style=&quot;font-family: verdana, geneva, sans-serif;&quot;&gt;Our ambitio",
+   "departments": [
+    {
+     "id": 4062959101,
+     "name": "Data Analysis",
+     "child_ids": [],
+     "parent_id": 4062956101
+    }
+   ],
+   "offices": [
+    {
+     "id": 4057649101,
+     "name": "Puzzleplay - Warsaw",
+     "location": "Warsaw, Mazowieckie, Poland",
+     "child_ids": [],
+     "parent_id": 4057647101
+    }
+   ],
+   "ai_disclaimer": null,
+   "include_ai_disclaimer": null,
+   "ai_opt_out_request_url": null
+  }
+ ],
+ "meta": {
+  "total": 3
+ }
+}

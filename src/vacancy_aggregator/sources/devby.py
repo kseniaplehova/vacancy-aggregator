@@ -1,11 +1,18 @@
 from ..models import Vacancy
-from .base import Source, text_of
+from .base import Source, html_to_text, text_of
 
 BASE = "https://jobs.devby.io"
 
 
 class DevBy(Source):
     name = "jobs.devby.io"
+    has_details = True
+
+    def parse_detail(self, html: str, vacancy: Vacancy) -> None:
+        soup = self.soup(html)
+        # сначала блок «Специализация / Уровень / Опыт», затем сам текст вакансии
+        parts = [text_of(soup.select_one(".vacancy__info-block")), html_to_text(str(soup.select_one(".vacancy__text") or ""))]
+        vacancy.description = "\n".join(p for p in parts if p) or vacancy.description
 
     def page_url(self, query: str, page: int) -> str:
         # поиска по тексту у сайта нет: отдаётся весь список IT-вакансий

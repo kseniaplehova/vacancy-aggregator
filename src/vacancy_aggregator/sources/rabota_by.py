@@ -2,7 +2,7 @@ import re
 from urllib.parse import urlencode, urlsplit
 
 from ..models import Vacancy
-from .base import Source, text_of
+from .base import Source, html_to_text, job_posting, text_of
 
 SALARY = re.compile(r"\d[\d\s  ]*.*(Br|\$|€|₽)")
 VACANCY_ID = re.compile(r"/vacancy/(\d+)")
@@ -12,6 +12,13 @@ class RabotaBy(Source):
     name = "rabota.by"
     #: код Беларуси в справочнике регионов сайта
     area = 16
+    has_details = True
+
+    def parse_detail(self, html: str, vacancy: Vacancy) -> None:
+        posting = job_posting(self.soup(html))
+        if posting:
+            vacancy.description = html_to_text(posting.get("description")) or vacancy.description
+            vacancy.published = posting.get("datePosted") or vacancy.published
 
     def page_url(self, query: str, page: int) -> str:
         # на сайте страницы нумеруются с нуля

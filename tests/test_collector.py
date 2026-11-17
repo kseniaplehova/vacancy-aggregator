@@ -17,7 +17,7 @@ class Fake(Source):
     def parse(self, html):
         return []
 
-    async def fetch(self, client, query, pages=1):
+    async def fetch(self, client, query, pages=1, *, details=False):
         await asyncio.sleep(self.wait)
         if self.fail:
             raise RuntimeError("источник недоступен")

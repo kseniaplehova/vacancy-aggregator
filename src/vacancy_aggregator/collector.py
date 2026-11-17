@@ -36,11 +36,13 @@ class CollectResult:
         return [v for report in self.reports for v in report.vacancies]
 
 
-async def _poll(source: Source, client: httpx.AsyncClient, query: str, pages: int) -> SourceReport:
+async def _poll(
+    source: Source, client: httpx.AsyncClient, query: str, pages: int, details: bool
+) -> SourceReport:
     """Опрашивает источник; ошибка не выбрасывается, а попадает в отчёт."""
     started = time.perf_counter()
     try:
-        vacancies = await source.fetch(client, query, pages)
+        vacancies = await source.fetch(client, query, pages, details=details)
         error = None
     except Exception as exc:  # сбой одного источника не должен ронять остальные
         vacancies = []
@@ -49,19 +51,25 @@ async def _poll(source: Source, client: httpx.AsyncClient, query: str, pages: in
 
 
 async def collect(
-    sources: list[Source], query: str, pages: int = 1, *, concurrent: bool = True
+    sources: list[Source],
+    query: str,
+    pages: int = 1,
+    *,
+    concurrent: bool = True,
+    details: bool = False,
 ) -> CollectResult:
     """Собирает вакансии со всех источников.
 
     ``concurrent=False`` опрашивает источники по очереди — этот режим нужен
-    для сравнения с асинхронным в экспериментах.
+    для сравнения с асинхронным в экспериментах. ``details=True`` дополнительно
+    загружает страницу каждой вакансии ради полного описания.
     """
     async with httpx.AsyncClient(headers=HEADERS, follow_redirects=True, timeout=30) as client:
         # время считается без создания клиента: оно одинаково в обоих режимах
         started = time.perf_counter()
         if concurrent:
-            reports = await asyncio.gather(*(_poll(s, client, query, pages) for s in sources))
+            reports = await asyncio.gather(*(_poll(s, client, query, pages, details) for s in sources))
         else:
-            reports = [await _poll(s, client, query, pages) for s in sources]
+            reports = [await _poll(s, client, query, pages, details) for s in sources]
         seconds = time.perf_counter() - started
     return CollectResult(list(reports), seconds)

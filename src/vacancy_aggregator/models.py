@@ -19,6 +19,8 @@ class Vacancy:
     salary: str | None = None
     description: str | None = None
     published: str | None = None
+    #: площадка-первоисточник, если источник сам агрегатор и называет её
+    origin: str | None = None
     collected_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
     def to_dict(self) -> dict:

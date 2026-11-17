@@ -1,7 +1,7 @@
 import re
 
 from ..models import Vacancy
-from .base import Source, text_of
+from .base import Source, html_to_text, job_posting, text_of
 
 BASE = "https://myjob.by"
 SALARY = re.compile(r"\d.*(BYN|USD|EUR|RUB)")
@@ -11,6 +11,13 @@ class MyJob(Source):
     name = "myjob.by"
     #: раздел сайта; поиск по тексту находит слишком мало, поэтому берётся весь раздел IT
     category = "it-internet-telekom"
+    has_details = True
+
+    def parse_detail(self, html: str, vacancy: Vacancy) -> None:
+        posting = job_posting(self.soup(html))
+        if posting:
+            vacancy.description = html_to_text(posting.get("description")) or vacancy.description
+            vacancy.published = posting.get("datePosted") or vacancy.published
 
     def page_url(self, query: str, page: int) -> str:
         return f"{BASE}/categories/{self.category}?page={page}"

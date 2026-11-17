@@ -30,8 +30,10 @@ Python, asyncio, PostgreSQL.
 | belmeta.com | поиск по запросу | агрегатор: часть вакансий повторяет rabota.by |
 | jobs.devby.io | весь список IT-вакансий | поиска по тексту нет |
 | myjob.by | раздел «IT, Интернет, Телеком» | поиска по тексту нет |
+| Greenhouse | вакансии компании в Беларуси | JSON сервиса найма: ISsoft, Coherent Solutions, Tripledot Studios |
+| Lever | вакансии компании в Беларуси | JSON сервиса найма: IDT, Satellite Innovations |
 
-Новый источник — это класс-наследник `Source` с двумя методами: `page_url` (адрес страницы списка) и `parse` (разбор разметки). После этого его достаточно добавить в `ALL_SOURCES`.
+Новый источник — это класс-наследник `Source` с двумя методами: `page_url` (адрес страницы списка) и `parse` (разбор ответа). Если полное описание лежит на странице вакансии, добавляется `parse_detail`. После этого источник достаточно вписать в `default_sources`. Компания на Greenhouse или Lever подключается одной строкой без нового кода.
 
 ## Запуск
 
@@ -39,8 +41,8 @@ Python, asyncio, PostgreSQL.
 python -m venv .venv
 .venv\Scripts\pip install -e ".[dev]"
 
-# асинхронный сбор, по две страницы с каждого источника
-.venv\Scripts\python -m vacancy_aggregator --query python --pages 2 --out data/vacancies.json
+# асинхронный сбор, по две страницы с каждого источника, с полными описаниями
+.venv\Scripts\python -m vacancy_aggregator --query python --pages 2 --details --out data/vacancies.json
 
 # то же по очереди — для сравнения времени
 .venv\Scripts\python -m vacancy_aggregator --query python --pages 2 --sequential
@@ -62,4 +64,4 @@ tests/
 
 ## Состояние
 
-Готов сбор списков вакансий из четырёх источников. Дальше: полные описания вакансий, хранение в PostgreSQL, дедупликация.
+Готов сбор вакансий с полными описаниями из девяти источников. Дальше: хранение в PostgreSQL, дедупликация, веб-сервис с регистрацией пользователей.

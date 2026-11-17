@@ -1,13 +1,22 @@
 from urllib.parse import urlencode
 
 from ..models import Vacancy
-from .base import Source, text_of
+from .base import Source, html_to_text, text_of
 
 BASE = "https://belmeta.com"
 
 
 class Belmeta(Source):
     name = "belmeta.com"
+    has_details = True
+
+    def parse_detail(self, html: str, vacancy: Vacancy) -> None:
+        soup = self.soup(html)
+        vacancy.description = html_to_text(str(soup.select_one(".p-job-details .text") or "")) or vacancy.description
+        # у вакансий с других площадок кнопка отклика называет первоисточник: «Отклик на rabota.by»
+        apply = text_of(soup.select_one('a[href*="/jrd?"]'))
+        if apply and " на " in apply:
+            vacancy.origin = apply.rsplit(" на ", 1)[-1]
 
     def page_url(self, query: str, page: int) -> str:
         return f"{BASE}/vacansii?{urlencode({'q': query, 'page': page})}"
