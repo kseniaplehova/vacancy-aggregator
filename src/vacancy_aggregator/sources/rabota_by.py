@@ -1,0 +1,55 @@
+import re
+from urllib.parse import urlencode, urlsplit
+
+from ..models import Vacancy
+from .base import Source, text_of
+
+SALARY = re.compile(r"\d[\d\s  ]*.*(Br|\$|€|₽)")
+VACANCY_ID = re.compile(r"/vacancy/(\d+)")
+
+
+class RabotaBy(Source):
+    name = "rabota.by"
+    #: код Беларуси в справочнике регионов сайта
+    area = 16
+
+    def page_url(self, query: str, page: int) -> str:
+        # на сайте страницы нумеруются с нуля
+        params = {"text": query, "area": self.area, "page": page - 1}
+        return f"https://rabota.by/search/vacancy?{urlencode(params)}"
+
+    def parse(self, html: str) -> list[Vacancy]:
+        vacancies = []
+        for card in self.soup(html).select('[data-qa~="vacancy-serp__vacancy"]'):
+            link = card.select_one('a[data-qa="serp-item__title"]')
+            match = VACANCY_ID.search(link["href"]) if link else None
+            if not match:
+                continue
+            vacancies.append(
+                Vacancy(
+                    source=self.name,
+                    source_id=match.group(1),
+                    # без параметров поиска: адрес одной вакансии должен быть одинаковым
+                    url=urlsplit(link["href"])._replace(query="").geturl(),
+                    title=text_of(link),
+                    company=text_of(card.select_one('[data-qa="vacancy-serp__vacancy-employer-text"]')),
+                    city=self._city(card),
+                    salary=self._salary(card),
+                )
+            )
+        return vacancies
+
+    @staticmethod
+    def _city(card) -> str | None:
+        address = text_of(card.select_one('[data-qa="vacancy-serp__vacancy-address"]'))
+        return address.split(",")[0].strip() if address else None
+
+    @staticmethod
+    def _salary(card) -> str | None:
+        # у зарплаты нет своей метки, поэтому ищем самый короткий текст с числом и валютой
+        found = [t for t in map(text_of, card.find_all("span")) if t and SALARY.match(_strip_prefix(t))]
+        return min(found, key=len) if found else None
+
+
+def _strip_prefix(text: str) -> str:
+    return re.sub(r"^(от|до)\s+", "", text)

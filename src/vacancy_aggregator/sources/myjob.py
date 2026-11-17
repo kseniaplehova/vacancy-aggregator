@@ -1,0 +1,45 @@
+import re
+
+from ..models import Vacancy
+from .base import Source, text_of
+
+BASE = "https://myjob.by"
+SALARY = re.compile(r"\d.*(BYN|USD|EUR|RUB)")
+
+
+class MyJob(Source):
+    name = "myjob.by"
+    #: раздел сайта; поиск по тексту находит слишком мало, поэтому берётся весь раздел IT
+    category = "it-internet-telekom"
+
+    def page_url(self, query: str, page: int) -> str:
+        return f"{BASE}/categories/{self.category}?page={page}"
+
+    def parse(self, html: str) -> list[Vacancy]:
+        vacancies = []
+        for card in self.soup(html).select('[data-slot="card"]'):
+            link = card.select_one('a[href^="/jobs/"]')
+            title = text_of(card.select_one('[data-slot="card-title"]'))
+            if link is None or title is None:
+                continue
+            href = link["href"]
+            vacancies.append(
+                Vacancy(
+                    source=self.name,
+                    # в конце адреса — идентификатор вакансии
+                    source_id=href.rsplit("-", 1)[-1],
+                    url=BASE + href,
+                    title=title,
+                    company=text_of(card.select_one('[data-slot="card-header"] p')),
+                    city=text_of(card.select_one('a[href^="/cities/"]'))
+                    or text_of(card.select_one('a[href^="/regions/"]')),
+                    salary=self._salary(card),
+                    description=text_of(card.select_one('[data-slot="card-content"] > p')),
+                )
+            )
+        return vacancies
+
+    @staticmethod
+    def _salary(card) -> str | None:
+        found = [t for t in map(text_of, card.find_all("span")) if t and SALARY.search(t) and len(t) < 60]
+        return min(found, key=len) if found else None
