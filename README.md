@@ -42,7 +42,7 @@ python -m venv .venv
 .venv\Scripts\pip install -e ".[dev]"
 
 # асинхронный сбор, по две страницы с каждого источника, с полными описаниями
-.venv\Scripts\python -m vacancy_aggregator --query python --pages 2 --details --out data/vacancies.json
+.venv\Scripts\python -m vacancy_aggregator --query python --pages 2 --details --save
 
 # то же по очереди — для сравнения времени
 .venv\Scripts\python -m vacancy_aggregator --query python --pages 2 --sequential
@@ -51,12 +51,15 @@ python -m venv .venv
 .venv\Scripts\python -m pytest
 ```
 
+Флаг `--save` записывает вакансии в базу, `--out файл.json` — в файл. По умолчанию база — файл SQLite `data/vacancies.db`. Другая база подключается переменной окружения `DATABASE_URL`, например `postgresql+asyncpg://user:password@localhost/vacancies` (для PostgreSQL нужен пакет `asyncpg`).
+
 ## Структура
 
 ```
 src/vacancy_aggregator/
     models.py        вакансия
     collector.py     опрос источников: асинхронный и последовательный
+    db.py            таблицы и запись в базу
     sources/         по модулю на источник
 tests/
     fixtures/        сохранённые фрагменты страниц для тестов парсеров
@@ -64,4 +67,4 @@ tests/
 
 ## Состояние
 
-Готов сбор вакансий с полными описаниями из девяти источников. Дальше: хранение в PostgreSQL, дедупликация, веб-сервис с регистрацией пользователей.
+Готовы сбор вакансий с полными описаниями из девяти источников и хранение в базе. Дальше: дедупликация, веб-сервис с регистрацией пользователей.

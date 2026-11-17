@@ -11,6 +11,8 @@ dependencies = [
     "httpx>=0.28",
     "beautifulsoup4>=4.12",
     "lxml>=5",
+    "sqlalchemy[asyncio]>=2.0",
+    "aiosqlite>=0.20",
 ]
 
 [project.optional-dependencies]
