@@ -1,5 +1,6 @@
 """Настройки, общие для разработки и боевого сервера."""
 import os
+from datetime import timedelta
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -16,11 +17,17 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "rest_framework",
+    "django_filters",
+    "djoser",
+    "corsheaders",
     "apps.accounts",
     "apps.vacancies",
+    "apps.api",
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -85,3 +92,30 @@ STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": ("rest_framework_simplejwt.authentication.JWTAuthentication",),
+    # читать вакансии можно без входа, всё личное закрыто на уровне представлений
+    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.AllowAny",),
+}
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(hours=1),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=30),
+    "AUTH_HEADER_TYPES": ("Bearer",),
+}
+
+DJOSER = {
+    # список пользователей виден только администратору, свой профиль — владельцу
+    "HIDE_USERS": True,
+}
+
+# адреса, с которых к API может обращаться фронтенд, через запятую
+CORS_ALLOWED_ORIGINS = [origin for origin in os.getenv("CORS_ALLOWED_ORIGINS", "").split(",") if origin]
+
+# запросы, по которым вакансии собираются по расписанию
+COLLECT_QUERIES = [
+    query.strip()
+    for query in os.getenv("COLLECT_QUERIES", "python,разработчик,программист,аналитик,тестировщик,devops").split(",")
+    if query.strip()
+]

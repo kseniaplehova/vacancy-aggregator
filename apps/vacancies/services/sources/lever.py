@@ -2,7 +2,7 @@ import json
 from datetime import datetime, timezone
 
 from ..schemas import RawVacancy
-from .base import BELARUS, Source, html_to_text
+from .base import BELARUS, Source, html_to_text, local_city
 
 
 class Lever(Source):
@@ -35,7 +35,7 @@ class Lever(Source):
                     url=job["hostedUrl"],
                     title=job["text"].strip(),
                     company=self.company,
-                    city=location or None,
+                    city=local_city(location),
                     description=self._description(job),
                     published=self._date(job.get("createdAt")),
                 )

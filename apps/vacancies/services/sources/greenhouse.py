@@ -2,7 +2,7 @@ import html
 import json
 
 from ..schemas import RawVacancy
-from .base import BELARUS, Source, html_to_text
+from .base import BELARUS, Source, html_to_text, local_city
 
 
 class Greenhouse(Source):
@@ -35,7 +35,7 @@ class Greenhouse(Source):
                     url=job["absolute_url"],
                     title=job["title"].strip(),
                     company=job.get("company_name"),
-                    city=location or None,
+                    city=local_city(location),
                     # описание приходит как разметка с заменёнными спецсимволами
                     description=html_to_text(html.unescape(job.get("content") or "")),
                     published=job.get("first_published") or job.get("updated_at"),

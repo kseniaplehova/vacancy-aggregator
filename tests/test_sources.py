@@ -116,7 +116,7 @@ def test_myjob_detail():
 def test_greenhouse_keeps_only_belarus():
     vacancies = parse("greenhouse.json")
     # в образце три вакансии: одна лондонская и две минские
-    assert [v.city for v in vacancies] == ["Minsk", "Minsk"]
+    assert [v.city for v in vacancies] == ["Минск", "Минск"]
     first = vacancies[0]
     assert first.title == "Data Analyst"
     assert first.company == "Tripledot Studios"
@@ -134,7 +134,7 @@ def test_lever_keeps_only_belarus():
     ]
     junior = vacancies[1]
     assert junior.company == "IDT"
-    assert junior.city == "Minsk"
+    assert junior.city == "Минск"
     assert junior.published.startswith("2025-06-03T15:17:00")
     assert junior.description.startswith("IDT is looking for a professional")
 

@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 
 
@@ -36,6 +37,22 @@ class Vacancy(models.Model):
         default=False,
         help_text="Страница вакансии загружена; иначе в описании только фрагмент из списка.",
     )
+    search_text = models.TextField(
+        "текст для поиска",
+        blank=True,
+        default="",
+        editable=False,
+        help_text="Название, компания и описание в нижнем регистре без знаков препинания.",
+    )
+    duplicate_of = models.ForeignKey(
+        "self",
+        verbose_name="дубликат вакансии",
+        on_delete=models.SET_NULL,
+        related_name="duplicates",
+        blank=True,
+        null=True,
+        help_text="Основная запись этой же вакансии из другого источника; пусто, если запись сама основная.",
+    )
     first_seen = models.DateTimeField("впервые собрана")
     last_seen = models.DateTimeField("последний раз встречалась")
 
@@ -50,3 +67,47 @@ class Vacancy(models.Model):
 
     def __str__(self):
         return f"{self.title} — {self.company or 'компания не указана'} ({self.source})"
+
+
+class Favorite(models.Model):
+    """Вакансия, которую пользователь отметил как интересную."""
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, verbose_name="пользователь", on_delete=models.CASCADE, related_name="favorites"
+    )
+    vacancy = models.ForeignKey(
+        Vacancy, verbose_name="вакансия", on_delete=models.CASCADE, related_name="favorites"
+    )
+    created = models.DateTimeField("добавлена", auto_now_add=True)
+
+    class Meta:
+        verbose_name = "избранная вакансия"
+        verbose_name_plural = "избранные вакансии"
+        ordering = ["-created"]
+        constraints = [
+            models.UniqueConstraint(fields=["user", "vacancy"], name="unique_favorite"),
+        ]
+
+    def __str__(self):
+        return f"{self.user} → {self.vacancy}"
+
+
+class SavedSearch(models.Model):
+    """Сохранённые критерии отбора: по ним пользователь видит только подходящие вакансии."""
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, verbose_name="пользователь", on_delete=models.CASCADE, related_name="searches"
+    )
+    name = models.CharField("название", max_length=100)
+    query = models.CharField("слова для поиска", max_length=200, blank=True)
+    city = models.CharField("город", max_length=200, blank=True)
+    source = models.CharField("источник", max_length=64, blank=True)
+    created = models.DateTimeField("создан", auto_now_add=True)
+
+    class Meta:
+        verbose_name = "сохранённый поиск"
+        verbose_name_plural = "сохранённые поиски"
+        ordering = ["-created"]
+
+    def __str__(self):
+        return f"{self.name} ({self.user})"

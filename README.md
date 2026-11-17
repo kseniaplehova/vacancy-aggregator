@@ -50,6 +50,29 @@ Python, Django, asyncio и httpx для сбора, BeautifulSoup для раз�
 
 Эталон для оценки берётся из самих данных: Belmeta — агрегатор, и для части вакансий она указывает адрес первоисточника на rabota.by. Пара «вакансия Belmeta — её первоисточник» считается дубликатом, все остальные пары — нет. Команда `evaluate_dedup` для каждого метода подбирает порог с наибольшим F1 и показывает точность, полноту и время работы.
 
+На сайте дубликаты объединяются автоматически после каждого сбора (`services/dedup/pipeline.py`). Две записи из разных источников считаются одной вакансией, если агрегатор сам сослался на первоисточник либо совпали компания, город и название (похожесть названий не ниже 0,8). В группе остаётся одна основная запись — первоисточник с самым полным описанием, остальные показываются как «также опубликовано на…».
+
+## API
+
+Сервер отдаёт данные в формате JSON по адресам `/api/v1/…`. Читать вакансии можно без входа; избранное и сохранённые поиски требуют токен в заголовке `Authorization: Bearer <access>`.
+
+| Запрос | Назначение |
+|---|---|
+| `GET /api/v1/vacancies/` | список вакансий без дубликатов, по 20 на страницу (`page`, `page_size`) |
+| `GET /api/v1/vacancies/{id}/` | вакансия с полным описанием |
+| `GET /api/v1/filters/` | источники и города с числом вакансий — для выпадающих списков |
+| `POST /api/v1/auth/users/` | регистрация: `username`, `email`, `password` |
+| `POST /api/v1/auth/jwt/create/` | вход: по `username` и `password` выдаёт токены `access` и `refresh` |
+| `POST /api/v1/auth/jwt/refresh/` | новый `access` по `refresh` |
+| `GET /api/v1/auth/users/me/` | профиль текущего пользователя |
+| `POST`, `DELETE /api/v1/vacancies/{id}/favorite/` | добавить в избранное, убрать из избранного |
+| `GET /api/v1/favorites/` | избранные вакансии |
+| `GET`, `POST /api/v1/searches/`, `PATCH`, `DELETE /api/v1/searches/{id}/` | сохранённые критерии отбора: `name`, `query`, `city`, `source` |
+
+Параметры списка вакансий: `q` — слова для поиска по названию, компании и описанию (должны встретиться все), `city`, `source`, `has_salary=true|false`, `ordering=first_seen|-first_seen|last_seen|-last_seen`.
+
+У каждой вакансии в списке есть поле `sources` — все площадки, где она опубликована, со ссылками, и `is_favorite`.
+
 ## Запуск
 
 ```
@@ -59,6 +82,12 @@ python -m venv .venv
 
 # асинхронный сбор, по две страницы с каждого источника, с полными описаниями
 .venv\Scripts\python manage.py collect --query python --pages 2 --details
+
+# сбор по всем запросам из настройки COLLECT_QUERIES — эту команду запускают по расписанию
+.venv\Scripts\python manage.py collect --pages 3 --details
+
+# заново разметить дубликаты в базе
+.venv\Scripts\python manage.py deduplicate
 
 # то же по очереди и без записи в базу — для сравнения времени
 .venv\Scripts\python manage.py collect --query python --pages 2 --sequential --no-save
@@ -83,6 +112,8 @@ python -m venv .venv
 | `DJANGO_SETTINGS_MODULE` | `config.settings.development` (по умолчанию) или `config.settings.production` |
 | `DJANGO_SECRET_KEY` | секретный ключ Django; на сервере обязателен |
 | `DJANGO_ALLOWED_HOSTS` | адреса сайта через запятую; на сервере обязателен |
+| `CORS_ALLOWED_ORIGINS` | адреса фронтенда через запятую, которым разрешено обращаться к API |
+| `COLLECT_QUERIES` | поисковые запросы для сбора по расписанию, через запятую |
 | `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `DB_HOST`, `DB_PORT` | подключение к PostgreSQL; если `POSTGRES_DB` не задана, используется SQLite |
 
 ## Структура
@@ -94,8 +125,9 @@ config/
     urls.py
 apps/
     accounts/            пользователи
+    api/                 serializers.py, filters.py, views.py, urls.py
     vacancies/
-        models.py        вакансия в базе
+        models.py        вакансия, избранное, сохранённый поиск
         admin.py
         services/
             sources/     по модулю на источник
@@ -104,7 +136,8 @@ apps/
             schemas.py   вакансия в том виде, в каком её отдал источник
             dedup/       методы сравнения вакансий и их оценка
         management/commands/
-            collect.py          сбор вакансий
+            collect.py          сбор вакансий и разметка дубликатов
+            deduplicate.py      повторная разметка дубликатов
             evaluate_dedup.py   сравнение методов дедупликации
 tests/
     fixtures/            сохранённые фрагменты страниц и ответов для тестов
@@ -112,4 +145,4 @@ tests/
 
 ## Состояние
 
-Готовы сбор вакансий с полными описаниями из девяти источников и хранение в базе. Дальше: дедупликация, регистрация пользователей и страницы сайта.
+Готова серверная часть: сбор из девяти источников, хранение, объединение дубликатов, API с регистрацией, избранным и сохранёнными поисками. Дальше: фронтенд и выкладка на сервер.

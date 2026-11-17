@@ -1,19 +1,29 @@
 import asyncio
 import json
+import time
 from pathlib import Path
 
+from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from apps.vacancies.services.collector import collect
 from apps.vacancies.services.sources import default_sources
-from apps.vacancies.services.storage import known_details, save_vacancies
+from apps.vacancies.services.storage import deduplicate, known_details, save_vacancies
+
+#: пауза между поисковыми запросами, чтобы не нагружать сайты
+PAUSE_BETWEEN_QUERIES = 5
 
 
 class Command(BaseCommand):
-    help = "Собирает вакансии из всех источников и записывает их в базу."
+    help = "Собирает вакансии из всех источников, записывает их в базу и размечает дубликаты."
 
     def add_arguments(self, parser):
-        parser.add_argument("--query", default="python", help="поисковый запрос (по умолчанию: python)")
+        parser.add_argument(
+            "--query",
+            action="append",
+            help="поисковый запрос; можно указать несколько раз. "
+            "Без него берутся запросы из настройки COLLECT_QUERIES",
+        )
         parser.add_argument("--pages", type=int, default=1, help="сколько страниц брать с каждого источника")
         parser.add_argument("--details", action="store_true", help="загружать полные описания вакансий")
         parser.add_argument("--sequential", action="store_true", help="опрашивать источники по очереди")
@@ -21,10 +31,31 @@ class Command(BaseCommand):
         parser.add_argument("--out", type=Path, help="дополнительно сохранить собранное в файл JSON")
 
     def handle(self, *args, **options):
+        queries = options["query"] or settings.COLLECT_QUERIES
+        collected = []
+        for number, query in enumerate(queries):
+            if number:
+                time.sleep(PAUSE_BETWEEN_QUERIES)
+            if len(queries) > 1:
+                self.stdout.write(self.style.MIGRATE_HEADING(f"Запрос «{query}»"))
+            collected.extend(self.collect_query(query, options))
+
+        if not options["no_save"]:
+            groups, duplicates = deduplicate()
+            self.stdout.write(self.style.SUCCESS(f"дубликаты: {duplicates} записей объединено в {groups} групп"))
+
+        if options["out"]:
+            out: Path = options["out"]
+            out.parent.mkdir(parents=True, exist_ok=True)
+            payload = [vacancy.to_dict() for vacancy in collected]
+            out.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+            self.stdout.write(f"сохранено в {out}")
+
+    def collect_query(self, query, options):
         result = asyncio.run(
             collect(
                 default_sources(),
-                options["query"],
+                query,
                 options["pages"],
                 concurrent=not options["sequential"],
                 details=options["details"],
@@ -47,10 +78,4 @@ class Command(BaseCommand):
         if not options["no_save"]:
             added, updated = save_vacancies(result.vacancies)
             self.stdout.write(self.style.SUCCESS(f"в базе: {added} новых, {updated} обновлено"))
-
-        if options["out"]:
-            out: Path = options["out"]
-            out.parent.mkdir(parents=True, exist_ok=True)
-            payload = [v.to_dict() for v in result.vacancies]
-            out.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
-            self.stdout.write(f"сохранено в {out}")
+        return result.vacancies

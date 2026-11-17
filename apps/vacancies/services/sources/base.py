@@ -12,7 +12,17 @@ from ..schemas import RawVacancy
 
 #: города и названия страны, по которым вакансию считаем белорусской
 BELARUS = re.compile(r"belarus|minsk|brest|grodno|gomel|vitebsk|mogilev|беларус|минск", re.IGNORECASE)
-BLOCK_TAGS = ["p", "div", "li", "ul", "ol", "h1", "h2", "h3", "h4", "h5", "h6", "tr"]
+#: русские названия для городов, которые международные компании пишут по-английски
+CITY_NAMES = {
+    "minsk": "Минск",
+    "brest": "Брест",
+    "grodno": "Гродно",
+    "gomel": "Гомель",
+    "vitebsk": "Витебск",
+    "mogilev": "Могилёв",
+    "belarus": "Беларусь",
+}
+BLOCK_TAGS =["p", "div", "li", "ul", "ol", "h1", "h2", "h3", "h4", "h5", "h6", "tr"]
 
 
 def text_of(tag: Tag | None, sep: str = " ") -> str | None:
@@ -24,6 +34,13 @@ def text_of(tag: Tag | None, sep: str = " ") -> str | None:
     if tag is None:
         return None
     return " ".join(tag.get_text(sep).split()) or None
+
+
+def local_city(name: str | None) -> str | None:
+    """«Minsk» → «Минск», чтобы один город не числился под двумя названиями."""
+    if not name:
+        return None
+    return CITY_NAMES.get(name.strip().lower(), name.strip())
 
 
 def html_to_text(html: str | None) -> str | None:
