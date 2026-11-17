@@ -6,7 +6,7 @@ from apps.vacancies.models import Vacancy
 from .schemas import RawVacancy
 
 #: поля, которые при повторном сборе обновляются данными источника
-UPDATED_FIELDS = ("url", "title", "company", "city", "salary", "description", "published", "origin")
+UPDATED_FIELDS = ("url", "title", "company", "city", "salary", "description", "published", "origin", "origin_url")
 
 
 @transaction.atomic

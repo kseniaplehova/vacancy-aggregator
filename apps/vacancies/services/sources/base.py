@@ -101,15 +101,19 @@ class Source(ABC):
             await self._fetch_details(client, vacancies)
         return vacancies
 
+    async def load_detail(self, client: httpx.AsyncClient, vacancy: RawVacancy) -> None:
+        """Загружает страницу вакансии и дополняет вакансию её данными."""
+        response = await client.get(vacancy.url)
+        response.raise_for_status()
+        self.parse_detail(response.text, vacancy)
+
     async def _fetch_details(self, client: httpx.AsyncClient, vacancies: list[RawVacancy]) -> None:
         limit = asyncio.Semaphore(self.details_limit)
 
         async def load(vacancy: RawVacancy) -> None:
             async with limit:
                 try:
-                    response = await client.get(vacancy.url)
-                    response.raise_for_status()
-                    self.parse_detail(response.text, vacancy)
+                    await self.load_detail(client, vacancy)
                 except httpx.HTTPError:
                     pass  # вакансия остаётся с данными из списка
                 await asyncio.sleep(self.delay / self.details_limit)

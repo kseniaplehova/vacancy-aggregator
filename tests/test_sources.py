@@ -92,6 +92,8 @@ def test_belmeta():
 def test_belmeta_detail_names_origin():
     vacancy = detail(Belmeta(), "belmeta_detail.html")
     assert vacancy.origin == "rabota.by"
+    # до запроса к сайту здесь адрес кнопки отклика; настоящий адрес подставляет load_detail
+    assert vacancy.origin_url == "https://belmeta.com/jrd?id=15772120&src=js"
     assert "FastAPI" in vacancy.description
     assert len(vacancy.description) > 3000
 

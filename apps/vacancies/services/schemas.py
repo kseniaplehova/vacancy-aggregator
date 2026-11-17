@@ -21,6 +21,8 @@ class RawVacancy:
     published: str | None = None
     #: площадка-первоисточник, если источник сам агрегатор и называет её
     origin: str | None = None
+    #: адрес этой же вакансии на площадке-первоисточнике
+    origin_url: str | None = None
     collected_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
     def to_dict(self) -> dict:

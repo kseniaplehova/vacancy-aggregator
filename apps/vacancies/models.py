@@ -24,6 +24,13 @@ class Vacancy(models.Model):
         null=True,
         help_text="Площадка, с которой вакансию взял источник-агрегатор.",
     )
+    origin_url = models.URLField(
+        "ссылка на первоисточник",
+        max_length=500,
+        blank=True,
+        null=True,
+        help_text="Адрес этой же вакансии на площадке-первоисточнике.",
+    )
     first_seen = models.DateTimeField("впервые собрана")
     last_seen = models.DateTimeField("последний раз встречалась")
 
