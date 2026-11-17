@@ -6,7 +6,7 @@ from django.core.management.base import BaseCommand
 
 from apps.vacancies.services.collector import collect
 from apps.vacancies.services.sources import default_sources
-from apps.vacancies.services.storage import save_vacancies
+from apps.vacancies.services.storage import known_details, save_vacancies
 
 
 class Command(BaseCommand):
@@ -28,6 +28,8 @@ class Command(BaseCommand):
                 options["pages"],
                 concurrent=not options["sequential"],
                 details=options["details"],
+                # страницы вакансий, уже загруженные в прошлые разы, повторно не запрашиваются
+                known=known_details() if options["details"] else None,
             )
         )
 
@@ -36,6 +38,9 @@ class Command(BaseCommand):
                 line = self.style.ERROR(f"ошибка: {report.error}")
             else:
                 line = f"{len(report.vacancies)} вакансий"
+            if report.detail_errors:
+                reasons = ", ".join(f"{reason}: {count}" for reason, count in report.detail_errors.items())
+                line += self.style.WARNING(f"  (без описания — {reasons})")
             self.stdout.write(f"{report.source:<32} {report.seconds:6.2f} с  {line}")
         self.stdout.write(f"{'всего':<32} {result.seconds:6.2f} с  {len(result.vacancies)} вакансий")
 

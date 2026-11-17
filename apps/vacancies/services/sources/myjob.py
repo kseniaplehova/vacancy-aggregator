@@ -13,11 +13,14 @@ class MyJob(Source):
     category = "it-internet-telekom"
     has_details = True
 
-    def parse_detail(self, html: str, vacancy: RawVacancy) -> None:
+    def parse_detail(self, html: str, vacancy: RawVacancy) -> bool:
         posting = job_posting(self.soup(html))
-        if posting:
-            vacancy.description = html_to_text(posting.get("description")) or vacancy.description
-            vacancy.published = posting.get("datePosted") or vacancy.published
+        description = html_to_text(posting.get("description")) if posting else None
+        if not description:
+            return False
+        vacancy.description = description
+        vacancy.published = posting.get("datePosted") or vacancy.published
+        return True
 
     def page_url(self, query: str, page: int) -> str:
         return f"{BASE}/categories/{self.category}?page={page}"

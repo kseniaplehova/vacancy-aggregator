@@ -8,11 +8,15 @@ class DevBy(Source):
     name = "jobs.devby.io"
     has_details = True
 
-    def parse_detail(self, html: str, vacancy: RawVacancy) -> None:
+    def parse_detail(self, html: str, vacancy: RawVacancy) -> bool:
         soup = self.soup(html)
+        text = html_to_text(str(soup.select_one(".vacancy__text") or ""))
+        if not text:
+            return False
         # сначала блок «Специализация / Уровень / Опыт», затем сам текст вакансии
-        parts = [text_of(soup.select_one(".vacancy__info-block")), html_to_text(str(soup.select_one(".vacancy__text") or ""))]
-        vacancy.description = "\n".join(p for p in parts if p) or vacancy.description
+        parts = [text_of(soup.select_one(".vacancy__info-block")), text]
+        vacancy.description = "\n".join(p for p in parts if p)
+        return True
 
     def page_url(self, query: str, page: int) -> str:
         # поиска по тексту у сайта нет: отдаётся весь список IT-вакансий

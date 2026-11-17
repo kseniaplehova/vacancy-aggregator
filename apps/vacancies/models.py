@@ -31,6 +31,11 @@ class Vacancy(models.Model):
         null=True,
         help_text="Адрес этой же вакансии на площадке-первоисточнике.",
     )
+    detailed = models.BooleanField(
+        "описание полное",
+        default=False,
+        help_text="Страница вакансии загружена; иначе в описании только фрагмент из списка.",
+    )
     first_seen = models.DateTimeField("впервые собрана")
     last_seen = models.DateTimeField("последний раз встречалась")
 

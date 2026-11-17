@@ -23,6 +23,8 @@ class RawVacancy:
     origin: str | None = None
     #: адрес этой же вакансии на площадке-первоисточнике
     origin_url: str | None = None
+    #: True — страница вакансии загружена, описание полное
+    detailed: bool = False
     collected_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
     def to_dict(self) -> dict:

@@ -9,6 +9,14 @@ from .schemas import RawVacancy
 UPDATED_FIELDS = ("url", "title", "company", "city", "salary", "description", "published", "origin", "origin_url")
 
 
+def known_details() -> dict[str, set[str]]:
+    """Номера вакансий по источникам, чьи страницы уже успешно загружались."""
+    known: dict[str, set[str]] = {}
+    for source, source_id in Vacancy.objects.filter(detailed=True).values_list("source", "source_id"):
+        known.setdefault(source, set()).add(source_id)
+    return known
+
+
 @transaction.atomic
 def save_vacancies(raw_vacancies: list[RawVacancy]) -> tuple[int, int]:
     """Записывает собранные вакансии в базу; возвращает число новых и обновлённых.
@@ -36,8 +44,9 @@ def save_vacancies(raw_vacancies: list[RawVacancy]) -> tuple[int, int]:
                 # короткая карточка из списка не должна затирать уже сохранённое описание
                 if value is not None or getattr(vacancy, name) is None:
                     setattr(vacancy, name, value)
+            vacancy.detailed = vacancy.detailed or raw.detailed
             vacancy.last_seen = now
 
     Vacancy.objects.bulk_create(new)
-    Vacancy.objects.bulk_update(changed, [*UPDATED_FIELDS, "last_seen"])
+    Vacancy.objects.bulk_update(changed, [*UPDATED_FIELDS, "detailed", "last_seen"])
     return len(new), len(changed)

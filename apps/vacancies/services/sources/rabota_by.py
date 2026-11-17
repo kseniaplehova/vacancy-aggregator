@@ -13,12 +13,19 @@ class RabotaBy(Source):
     #: код Беларуси в справочнике регионов сайта
     area = 16
     has_details = True
+    # при частых запросах сайт показывает проверку «я не робот», поэтому
+    # страницы вакансий загружаются по одной и с паузой
+    details_limit = 1
+    delay = 2.0
 
-    def parse_detail(self, html: str, vacancy: RawVacancy) -> None:
+    def parse_detail(self, html: str, vacancy: RawVacancy) -> bool:
         posting = job_posting(self.soup(html))
-        if posting:
-            vacancy.description = html_to_text(posting.get("description")) or vacancy.description
-            vacancy.published = posting.get("datePosted") or vacancy.published
+        description = html_to_text(posting.get("description")) if posting else None
+        if not description:
+            return False
+        vacancy.description = description
+        vacancy.published = posting.get("datePosted") or vacancy.published
+        return True
 
     def page_url(self, query: str, page: int) -> str:
         # на сайте страницы нумеруются с нуля

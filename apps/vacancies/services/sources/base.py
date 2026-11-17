@@ -2,6 +2,8 @@ import asyncio
 import json
 import re
 from abc import ABC, abstractmethod
+from collections import Counter
+from collections.abc import Collection
 
 import httpx
 from bs4 import BeautifulSoup, Tag
@@ -51,6 +53,10 @@ def job_posting(soup: BeautifulSoup) -> dict | None:
     return None
 
 
+class SourceBlocked(Exception):
+    """Сайт распознал автоматические запросы и требует подтвердить, что запрос делает человек."""
+
+
 class Source(ABC):
     """Источник вакансий.
 
@@ -78,44 +84,77 @@ class Source(ABC):
     def parse(self, text: str) -> list[RawVacancy]:
         """Достаёт вакансии из одной страницы списка (разметка или JSON)."""
 
-    def parse_detail(self, html: str, vacancy: RawVacancy) -> None:
-        """Дополняет вакансию данными с её собственной страницы."""
+    def parse_detail(self, html: str, vacancy: RawVacancy) -> bool:
+        """Дополняет вакансию данными с её страницы; False — описания на странице нет."""
+        return False
 
     async def fetch(
-        self, client: httpx.AsyncClient, query: str, pages: int = 1, *, details: bool = False
+        self,
+        client: httpx.AsyncClient,
+        query: str,
+        pages: int = 1,
+        *,
+        details: bool = False,
+        skip_details: Collection[str] = (),
     ) -> list[RawVacancy]:
+        """Собирает вакансии источника.
+
+        ``skip_details`` — номера вакансий, полное описание которых уже известно:
+        их страницы повторно не запрашиваются.
+        """
+        #: почему не удалось получить описание: причина → число вакансий
+        self.detail_errors: Counter[str] = Counter()
         vacancies: list[RawVacancy] = []
         seen: set[str] = set()
         for page in range(1, (pages if self.paginated else 1) + 1):
             if page > 1:
                 await asyncio.sleep(self.delay)
-            response = await client.get(self.page_url(query, page))
-            response.raise_for_status()
+            text = await self.get(client, self.page_url(query, page))
             # страница без новых вакансий — список закончился
-            fresh = [v for v in self.parse(response.text) if v.source_id not in seen]
+            fresh = [v for v in self.parse(text) if v.source_id not in seen]
             if not fresh:
                 break
             seen.update(v.source_id for v in fresh)
             vacancies.extend(fresh)
         if details and self.has_details:
-            await self._fetch_details(client, vacancies)
+            await self._fetch_details(client, [v for v in vacancies if v.source_id not in skip_details])
         return vacancies
 
-    async def load_detail(self, client: httpx.AsyncClient, vacancy: RawVacancy) -> None:
-        """Загружает страницу вакансии и дополняет вакансию её данными."""
-        response = await client.get(vacancy.url)
+    async def get(self, client: httpx.AsyncClient, url: str) -> str:
+        """Загружает страницу; если сайт вместо неё показал проверку «я не робот» — SourceBlocked."""
+        response = await client.get(url)
         response.raise_for_status()
-        self.parse_detail(response.text, vacancy)
+        if "captcha" in response.url.path:
+            raise SourceBlocked("сайт запросил проверку «я не робот»")
+        return response.text
+
+    async def load_detail(self, client: httpx.AsyncClient, vacancy: RawVacancy) -> bool:
+        """Загружает страницу вакансии и дополняет вакансию её данными."""
+        return self.parse_detail(await self.get(client, vacancy.url), vacancy)
 
     async def _fetch_details(self, client: httpx.AsyncClient, vacancies: list[RawVacancy]) -> None:
         limit = asyncio.Semaphore(self.details_limit)
+        blocked = False
 
         async def load(vacancy: RawVacancy) -> None:
+            nonlocal blocked
             async with limit:
+                if blocked:
+                    # сайт попросил остановиться: оставшиеся страницы не запрашиваем
+                    self.detail_errors["пропущено после проверки «я не робот»"] += 1
+                    return
+                # при сбое вакансия остаётся с данными из списка, а причина попадает в отчёт
                 try:
-                    await self.load_detail(client, vacancy)
-                except httpx.HTTPError:
-                    pass  # вакансия остаётся с данными из списка
+                    vacancy.detailed = await self.load_detail(client, vacancy)
+                    if not vacancy.detailed:
+                        self.detail_errors["на странице нет описания"] += 1
+                except SourceBlocked:
+                    blocked = True
+                    self.detail_errors["проверка «я не робот»"] += 1
+                except httpx.HTTPStatusError as exc:
+                    self.detail_errors[f"HTTP {exc.response.status_code}"] += 1
+                except httpx.HTTPError as exc:
+                    self.detail_errors[type(exc).__name__] += 1
                 await asyncio.sleep(self.delay / self.details_limit)
 
         await asyncio.gather(*(load(v) for v in vacancies))
