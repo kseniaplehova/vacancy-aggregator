@@ -1,6 +1,6 @@
 from urllib.parse import urlencode
 
-from ..models import Vacancy
+from ..schemas import RawVacancy
 from .base import Source, html_to_text, text_of
 
 BASE = "https://belmeta.com"
@@ -10,7 +10,7 @@ class Belmeta(Source):
     name = "belmeta.com"
     has_details = True
 
-    def parse_detail(self, html: str, vacancy: Vacancy) -> None:
+    def parse_detail(self, html: str, vacancy: RawVacancy) -> None:
         soup = self.soup(html)
         vacancy.description = html_to_text(str(soup.select_one(".p-job-details .text") or "")) or vacancy.description
         # у вакансий с других площадок кнопка отклика называет первоисточник: «Отклик на rabota.by»
@@ -21,14 +21,14 @@ class Belmeta(Source):
     def page_url(self, query: str, page: int) -> str:
         return f"{BASE}/vacansii?{urlencode({'q': query, 'page': page})}"
 
-    def parse(self, html: str) -> list[Vacancy]:
+    def parse(self, html: str) -> list[RawVacancy]:
         vacancies = []
         for job in self.soup(html).select("article.job[data-id]"):
             link = job.select_one("a.job-title")
             if link is None:
                 continue
             vacancies.append(
-                Vacancy(
+                RawVacancy(
                     source=self.name,
                     source_id=job["data-id"],
                     url=BASE + link["href"],

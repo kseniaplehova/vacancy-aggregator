@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 
 
 @dataclass(slots=True)
-class Vacancy:
+class RawVacancy:
     """Вакансия в том виде, в каком её отдал источник.
 
     Зарплата и дата хранятся строкой: источники записывают их по-разному

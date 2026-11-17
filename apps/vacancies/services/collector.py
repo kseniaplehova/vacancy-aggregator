@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 
 import httpx
 
-from .models import Vacancy
+from .schemas import RawVacancy
 from .sources import Source
 
 HEADERS = {
@@ -22,7 +22,7 @@ class SourceReport:
 
     source: str
     seconds: float
-    vacancies: list[Vacancy] = field(default_factory=list)
+    vacancies: list[RawVacancy] = field(default_factory=list)
     error: str | None = None
 
 
@@ -32,7 +32,7 @@ class CollectResult:
     seconds: float
 
     @property
-    def vacancies(self) -> list[Vacancy]:
+    def vacancies(self) -> list[RawVacancy]:
         return [v for report in self.reports for v in report.vacancies]
 
 

@@ -20,7 +20,7 @@
 
 ## Инструменты
 
-Python, asyncio, PostgreSQL.
+Python, Django, asyncio и httpx для сбора, BeautifulSoup для разбора страниц. База данных — SQLite по умолчанию, PostgreSQL через переменные окружения.
 
 ## Источники
 
@@ -39,32 +39,56 @@ Python, asyncio, PostgreSQL.
 
 ```
 python -m venv .venv
-.venv\Scripts\pip install -e ".[dev]"
+.venv\Scripts\pip install -r requirements.txt
+.venv\Scripts\python manage.py migrate
 
 # асинхронный сбор, по две страницы с каждого источника, с полными описаниями
-.venv\Scripts\python -m vacancy_aggregator --query python --pages 2 --details --save
+.venv\Scripts\python manage.py collect --query python --pages 2 --details
 
-# то же по очереди — для сравнения времени
-.venv\Scripts\python -m vacancy_aggregator --query python --pages 2 --sequential
+# то же по очереди и без записи в базу — для сравнения времени
+.venv\Scripts\python manage.py collect --query python --pages 2 --sequential --no-save
+
+# админка: http://127.0.0.1:8000/admin/
+.venv\Scripts\python manage.py createsuperuser
+.venv\Scripts\python manage.py runserver
 
 # тесты
 .venv\Scripts\python -m pytest
 ```
 
-Флаг `--save` записывает вакансии в базу, `--out файл.json` — в файл. По умолчанию база — файл SQLite `data/vacancies.db`. Другая база подключается переменной окружения `DATABASE_URL`, например `postgresql+asyncpg://user:password@localhost/vacancies` (для PostgreSQL нужен пакет `asyncpg`).
+## Настройки
+
+Настройки читаются из переменных окружения; их можно записать в файл `.env` рядом с `manage.py`.
+
+| Переменная | Назначение |
+|---|---|
+| `DJANGO_SETTINGS_MODULE` | `config.settings.development` (по умолчанию) или `config.settings.production` |
+| `DJANGO_SECRET_KEY` | секретный ключ Django; на сервере обязателен |
+| `DJANGO_ALLOWED_HOSTS` | адреса сайта через запятую; на сервере обязателен |
+| `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `DB_HOST`, `DB_PORT` | подключение к PostgreSQL; если `POSTGRES_DB` не задана, используется SQLite |
 
 ## Структура
 
 ```
-src/vacancy_aggregator/
-    models.py        вакансия
-    collector.py     опрос источников: асинхронный и последовательный
-    db.py            таблицы и запись в базу
-    sources/         по модулю на источник
+manage.py
+config/
+    settings/            base.py, development.py, production.py
+    urls.py
+apps/
+    accounts/            пользователи
+    vacancies/
+        models.py        вакансия в базе
+        admin.py
+        services/
+            sources/     по модулю на источник
+            collector.py опрос источников: асинхронный и последовательный
+            storage.py   запись собранного в базу
+            schemas.py   вакансия в том виде, в каком её отдал источник
+        management/commands/collect.py
 tests/
-    fixtures/        сохранённые фрагменты страниц для тестов парсеров
+    fixtures/            сохранённые фрагменты страниц и ответов для тестов
 ```
 
 ## Состояние
 
-Готовы сбор вакансий с полными описаниями из девяти источников и хранение в базе. Дальше: дедупликация, веб-сервис с регистрацией пользователей.
+Готовы сбор вакансий с полными описаниями из девяти источников и хранение в базе. Дальше: дедупликация, регистрация пользователей и страницы сайта.

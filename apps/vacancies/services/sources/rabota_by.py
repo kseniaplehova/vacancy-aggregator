@@ -1,7 +1,7 @@
 import re
 from urllib.parse import urlencode, urlsplit
 
-from ..models import Vacancy
+from ..schemas import RawVacancy
 from .base import Source, html_to_text, job_posting, text_of
 
 SALARY = re.compile(r"\d[\d\s  ]*.*(Br|\$|€|₽)")
@@ -14,7 +14,7 @@ class RabotaBy(Source):
     area = 16
     has_details = True
 
-    def parse_detail(self, html: str, vacancy: Vacancy) -> None:
+    def parse_detail(self, html: str, vacancy: RawVacancy) -> None:
         posting = job_posting(self.soup(html))
         if posting:
             vacancy.description = html_to_text(posting.get("description")) or vacancy.description
@@ -25,7 +25,7 @@ class RabotaBy(Source):
         params = {"text": query, "area": self.area, "page": page - 1}
         return f"https://rabota.by/search/vacancy?{urlencode(params)}"
 
-    def parse(self, html: str) -> list[Vacancy]:
+    def parse(self, html: str) -> list[RawVacancy]:
         vacancies = []
         for card in self.soup(html).select('[data-qa~="vacancy-serp__vacancy"]'):
             link = card.select_one('a[data-qa="serp-item__title"]')
@@ -33,7 +33,7 @@ class RabotaBy(Source):
             if not match:
                 continue
             vacancies.append(
-                Vacancy(
+                RawVacancy(
                     source=self.name,
                     source_id=match.group(1),
                     # без параметров поиска: адрес одной вакансии должен быть одинаковым

@@ -1,7 +1,7 @@
 import html
 import json
 
-from ..models import Vacancy
+from ..schemas import RawVacancy
 from .base import BELARUS, Source, html_to_text
 
 
@@ -21,7 +21,7 @@ class Greenhouse(Source):
     def page_url(self, query: str, page: int) -> str:
         return f"https://boards-api.greenhouse.io/v1/boards/{self.board}/jobs?content=true"
 
-    def parse(self, text: str) -> list[Vacancy]:
+    def parse(self, text: str) -> list[RawVacancy]:
         vacancies = []
         for job in json.loads(text)["jobs"]:
             location = job.get("location", {}).get("name") or ""
@@ -29,7 +29,7 @@ class Greenhouse(Source):
             if not BELARUS.search(location):
                 continue
             vacancies.append(
-                Vacancy(
+                RawVacancy(
                     source=self.name,
                     source_id=str(job["id"]),
                     url=job["absolute_url"],

@@ -2,9 +2,9 @@ from pathlib import Path
 
 import pytest
 
-from vacancy_aggregator.models import Vacancy
-from vacancy_aggregator.sources import Belmeta, DevBy, Greenhouse, Lever, MyJob, RabotaBy
-from vacancy_aggregator.sources.base import html_to_text
+from apps.vacancies.services.schemas import RawVacancy
+from apps.vacancies.services.sources import Belmeta, DevBy, Greenhouse, Lever, MyJob, RabotaBy
+from apps.vacancies.services.sources.base import html_to_text
 
 FIXTURES = Path(__file__).parent / "fixtures"
 SOURCES = {
@@ -21,13 +21,13 @@ def read(name: str) -> str:
     return (FIXTURES / name).read_text(encoding="utf-8")
 
 
-def parse(file: str) -> list[Vacancy]:
+def parse(file: str) -> list[RawVacancy]:
     return SOURCES[file].parse(read(file))
 
 
-def detail(source, file: str) -> Vacancy:
+def detail(source, file: str) -> RawVacancy:
     """Пустая вакансия, дополненная данными с сохранённой страницы."""
-    vacancy = Vacancy(source=source.name, source_id="1", url="https://example.org", title="x")
+    vacancy = RawVacancy(source=source.name, source_id="1", url="https://example.org", title="x")
     source.parse_detail(read(file), vacancy)
     return vacancy
 

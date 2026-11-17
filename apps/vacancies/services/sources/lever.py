@@ -1,7 +1,7 @@
 import json
 from datetime import datetime, timezone
 
-from ..models import Vacancy
+from ..schemas import RawVacancy
 from .base import BELARUS, Source, html_to_text
 
 
@@ -22,14 +22,14 @@ class Lever(Source):
     def page_url(self, query: str, page: int) -> str:
         return f"https://api.lever.co/v0/postings/{self.site}?mode=json"
 
-    def parse(self, text: str) -> list[Vacancy]:
+    def parse(self, text: str) -> list[RawVacancy]:
         vacancies = []
         for job in json.loads(text):
             location = job.get("categories", {}).get("location") or ""
             if job.get("country") != "BY" and not BELARUS.search(location):
                 continue
             vacancies.append(
-                Vacancy(
+                RawVacancy(
                     source=self.name,
                     source_id=job["id"],
                     url=job["hostedUrl"],

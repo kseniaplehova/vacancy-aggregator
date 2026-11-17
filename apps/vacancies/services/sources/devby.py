@@ -1,4 +1,4 @@
-from ..models import Vacancy
+from ..schemas import RawVacancy
 from .base import Source, html_to_text, text_of
 
 BASE = "https://jobs.devby.io"
@@ -8,7 +8,7 @@ class DevBy(Source):
     name = "jobs.devby.io"
     has_details = True
 
-    def parse_detail(self, html: str, vacancy: Vacancy) -> None:
+    def parse_detail(self, html: str, vacancy: RawVacancy) -> None:
         soup = self.soup(html)
         # сначала блок «Специализация / Уровень / Опыт», затем сам текст вакансии
         parts = [text_of(soup.select_one(".vacancy__info-block")), html_to_text(str(soup.select_one(".vacancy__text") or ""))]
@@ -18,7 +18,7 @@ class DevBy(Source):
         # поиска по тексту у сайта нет: отдаётся весь список IT-вакансий
         return f"{BASE}/?page={page}"
 
-    def parse(self, html: str) -> list[Vacancy]:
+    def parse(self, html: str) -> list[RawVacancy]:
         vacancies = []
         for item in self.soup(html).select(".vacancies-list-item"):
             link = item.select_one("a.vacancies-list-item__link_block")
@@ -26,7 +26,7 @@ class DevBy(Source):
                 continue
             tags = [text_of(t) for t in item.select(".vacancies-list-item__technology-tag__name")]
             vacancies.append(
-                Vacancy(
+                RawVacancy(
                     source=self.name,
                     source_id=link["href"].rstrip("/").rsplit("/", 1)[-1],
                     url=BASE + link["href"],

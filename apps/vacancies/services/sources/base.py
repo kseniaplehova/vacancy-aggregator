@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 import httpx
 from bs4 import BeautifulSoup, Tag
 
-from ..models import Vacancy
+from ..schemas import RawVacancy
 
 #: города и названия страны, по которым вакансию считаем белорусской
 BELARUS = re.compile(r"belarus|minsk|brest|grodno|gomel|vitebsk|mogilev|беларус|минск", re.IGNORECASE)
@@ -75,16 +75,16 @@ class Source(ABC):
         """Адрес страницы списка; ``page`` считается с единицы."""
 
     @abstractmethod
-    def parse(self, text: str) -> list[Vacancy]:
+    def parse(self, text: str) -> list[RawVacancy]:
         """Достаёт вакансии из одной страницы списка (разметка или JSON)."""
 
-    def parse_detail(self, html: str, vacancy: Vacancy) -> None:
+    def parse_detail(self, html: str, vacancy: RawVacancy) -> None:
         """Дополняет вакансию данными с её собственной страницы."""
 
     async def fetch(
         self, client: httpx.AsyncClient, query: str, pages: int = 1, *, details: bool = False
-    ) -> list[Vacancy]:
-        vacancies: list[Vacancy] = []
+    ) -> list[RawVacancy]:
+        vacancies: list[RawVacancy] = []
         seen: set[str] = set()
         for page in range(1, (pages if self.paginated else 1) + 1):
             if page > 1:
@@ -101,10 +101,10 @@ class Source(ABC):
             await self._fetch_details(client, vacancies)
         return vacancies
 
-    async def _fetch_details(self, client: httpx.AsyncClient, vacancies: list[Vacancy]) -> None:
+    async def _fetch_details(self, client: httpx.AsyncClient, vacancies: list[RawVacancy]) -> None:
         limit = asyncio.Semaphore(self.details_limit)
 
-        async def load(vacancy: Vacancy) -> None:
+        async def load(vacancy: RawVacancy) -> None:
             async with limit:
                 try:
                     response = await client.get(vacancy.url)

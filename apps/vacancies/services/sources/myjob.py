@@ -1,6 +1,6 @@
 import re
 
-from ..models import Vacancy
+from ..schemas import RawVacancy
 from .base import Source, html_to_text, job_posting, text_of
 
 BASE = "https://myjob.by"
@@ -13,7 +13,7 @@ class MyJob(Source):
     category = "it-internet-telekom"
     has_details = True
 
-    def parse_detail(self, html: str, vacancy: Vacancy) -> None:
+    def parse_detail(self, html: str, vacancy: RawVacancy) -> None:
         posting = job_posting(self.soup(html))
         if posting:
             vacancy.description = html_to_text(posting.get("description")) or vacancy.description
@@ -22,7 +22,7 @@ class MyJob(Source):
     def page_url(self, query: str, page: int) -> str:
         return f"{BASE}/categories/{self.category}?page={page}"
 
-    def parse(self, html: str) -> list[Vacancy]:
+    def parse(self, html: str) -> list[RawVacancy]:
         vacancies = []
         for card in self.soup(html).select('[data-slot="card"]'):
             link = card.select_one('a[href^="/jobs/"]')
@@ -31,7 +31,7 @@ class MyJob(Source):
                 continue
             href = link["href"]
             vacancies.append(
-                Vacancy(
+                RawVacancy(
                     source=self.name,
                     # в конце адреса — идентификатор вакансии
                     source_id=href.rsplit("-", 1)[-1],

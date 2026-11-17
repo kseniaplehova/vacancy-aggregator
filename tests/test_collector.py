@@ -1,8 +1,8 @@
 import asyncio
 
-from vacancy_aggregator.collector import collect
-from vacancy_aggregator.models import Vacancy
-from vacancy_aggregator.sources import Source
+from apps.vacancies.services.collector import collect
+from apps.vacancies.services.schemas import RawVacancy
+from apps.vacancies.services.sources import Source
 
 
 class Fake(Source):
@@ -21,7 +21,7 @@ class Fake(Source):
         await asyncio.sleep(self.wait)
         if self.fail:
             raise RuntimeError("источник недоступен")
-        return [Vacancy(source=self.name, source_id="1", url="https://example.org/1", title=query)]
+        return [RawVacancy(source=self.name, source_id="1", url="https://example.org/1", title=query)]
 
 
 def run(sources, **kwargs):
