@@ -1,0 +1,32 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 40px;
+  min-height: 40px;
+  justify-content: center;
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.button:hover {
+  color: var(--star);
+  border-color: var(--star);
+}
+
+.active {
+  color: var(--star);
+  border-color: var(--star);
+}
+
+.label {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}

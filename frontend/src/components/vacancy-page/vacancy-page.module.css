@@ -1,0 +1,65 @@
+.page {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.back {
+  align-self: flex-start;
+  border: none;
+  background: none;
+  padding: 4px 0;
+  color: var(--accent);
+  cursor: pointer;
+}
+
+.back:hover {
+  text-decoration: underline;
+}
+
+.title {
+  font-size: 24px;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.meta {
+  color: var(--muted);
+  font-size: 17px;
+}
+
+.salary {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--success);
+}
+
+.actions {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.section {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.heading {
+  font-size: 16px;
+}
+
+.description {
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+  max-width: 70ch;
+}
+
+.seen {
+  margin-top: 12px;
+  font-size: 13px;
+}
