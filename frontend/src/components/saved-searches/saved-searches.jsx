@@ -5,7 +5,6 @@ import { api } from "../../utils/api.js";
 import { sourceLabel } from "../../utils/format.js";
 import styles from "./saved-searches.module.css";
 
-// Сохранённые критерии отбора: одним нажатием возвращают нужную выборку вакансий.
 export default function SavedSearches({ filters, onApply }) {
   const { user } = useAuth();
   const [searches, setSearches] = useState([]);

@@ -1,10 +1,8 @@
-"""Коэффициент Жаккара — сходство двух множеств."""
 from .base import Matcher
 from .normalize import char_shingles, key_of, text_of, word_shingles
 
 
 def jaccard(a: set, b: set) -> float:
-    """Доля общих элементов: |A ∩ B| / |A ∪ B|."""
     if not a and not b:
         return 1.0
     common = len(a & b)
@@ -12,8 +10,6 @@ def jaccard(a: set, b: set) -> float:
 
 
 class JaccardKeyMatcher(Matcher):
-    """Жаккар по тройкам символов строки «название + компания»."""
-
     name = "Жаккар (название + компания)"
 
     def prepare(self, records):
@@ -24,8 +20,6 @@ class JaccardKeyMatcher(Matcher):
 
 
 class JaccardTextMatcher(Matcher):
-    """Жаккар по парам соседних слов всего текста вакансии."""
-
     name = "Жаккар (весь текст)"
 
     def prepare(self, records):

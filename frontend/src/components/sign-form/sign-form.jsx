@@ -4,7 +4,6 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext.jsx";
 import styles from "./sign-form.module.css";
 
-// Общая форма для входа и регистрации: отличаются набором полей и действием.
 function SignForm({ title, fields, submitLabel, onSubmit, footer }) {
   const navigate = useNavigate();
   const location = useLocation();

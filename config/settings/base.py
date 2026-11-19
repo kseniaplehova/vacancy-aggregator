@@ -1,4 +1,3 @@
-"""Настройки, общие для разработки и боевого сервера."""
 import os
 from datetime import timedelta
 from pathlib import Path
@@ -7,7 +6,6 @@ from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-# переменные окружения можно держать в файле .env рядом с manage.py
 load_dotenv(BASE_DIR / ".env")
 
 INSTALLED_APPS = [
@@ -60,7 +58,6 @@ ASGI_APPLICATION = "config.asgi.application"
 
 
 def database_settings() -> dict:
-    """SQLite по умолчанию; PostgreSQL, если задано имя базы в POSTGRES_DB."""
     if os.getenv("POSTGRES_DB"):
         return {
             "ENGINE": "django.db.backends.postgresql",
@@ -92,7 +89,6 @@ USE_TZ = True
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-# собранный фронтенд (npm run build): его файлы раздаются как статика, а index.html — как шаблон
 FRONTEND_DIST = BASE_DIR / "frontend" / "dist"
 STATICFILES_DIRS = [FRONTEND_DIST] if FRONTEND_DIST.exists() else []
 TEMPLATES[0]["DIRS"].append(FRONTEND_DIST)
@@ -105,7 +101,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": ("rest_framework_simplejwt.authentication.JWTAuthentication",),
-    # читать вакансии можно без входа, всё личное закрыто на уровне представлений
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.AllowAny",),
 }
 
@@ -116,14 +111,11 @@ SIMPLE_JWT = {
 }
 
 DJOSER = {
-    # список пользователей виден только администратору, свой профиль — владельцу
     "HIDE_USERS": True,
 }
 
-# адреса, с которых к API может обращаться фронтенд, через запятую
 CORS_ALLOWED_ORIGINS = [origin for origin in os.getenv("CORS_ALLOWED_ORIGINS", "").split(",") if origin]
 
-# запросы, по которым вакансии собираются по расписанию
 COLLECT_QUERIES = [
     query.strip()
     for query in os.getenv("COLLECT_QUERIES", "python,разработчик,программист,аналитик,тестировщик,devops").split(",")

@@ -6,12 +6,6 @@ from .base import BELARUS, Source, html_to_text, local_city
 
 
 class Lever(Source):
-    """Карьерная страница компании на сервисе найма Lever.
-
-    Как и Greenhouse, отдаёт все вакансии одним JSON-ответом. Названия компании
-    в ответе нет, поэтому оно задаётся при создании источника.
-    """
-
     paginated = False
 
     def __init__(self, site: str, company: str):
@@ -44,7 +38,6 @@ class Lever(Source):
 
     @staticmethod
     def _description(job: dict) -> str | None:
-        # текст вакансии разбит на вступление, списки с заголовками и заключение
         parts = [html_to_text(job.get("description"))]
         for block in job.get("lists", []):
             parts += [block.get("text"), html_to_text(block.get("content"))]

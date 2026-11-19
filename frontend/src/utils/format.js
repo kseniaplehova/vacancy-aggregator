@@ -1,5 +1,3 @@
-// Подписи и форматирование для показа вакансий.
-
 const SOURCE_LABELS = {
   "greenhouse:issoft": "ISsoft",
   "greenhouse:coherentsolutions": "Coherent Solutions",
@@ -8,7 +6,6 @@ const SOURCE_LABELS = {
   "lever:SatelliteInnovations": "Satellite Innovations",
 };
 
-// «lever:idt» → «IDT»: у сайтов компаний показываем название компании, а не сервиса найма.
 export function sourceLabel(source) {
   return SOURCE_LABELS[source] || source.replace(/^(greenhouse|lever):/, "");
 }
@@ -25,7 +22,6 @@ export function vacanciesCount(count) {
   return `${count.toLocaleString("ru-RU")} ${plural(count, "вакансия", "вакансии", "вакансий")}`;
 }
 
-// Когда вакансия впервые попала в сервис: «сегодня», «вчера», «5 дней назад», дата.
 export function seenAgo(iso) {
   const date = new Date(iso);
   const startOfDay = (value) => new Date(value.getFullYear(), value.getMonth(), value.getDate());

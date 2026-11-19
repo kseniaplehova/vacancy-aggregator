@@ -8,7 +8,6 @@ from .rabota_by import RabotaBy
 
 
 def default_sources() -> list[Source]:
-    """Все подключённые источники; новый добавляется одной строкой."""
     return [
         RabotaBy(),
         DevBy(),

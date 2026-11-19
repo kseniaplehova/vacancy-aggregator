@@ -13,20 +13,18 @@ class DevBy(Source):
         text = html_to_text(str(soup.select_one(".vacancy__text") or ""))
         if not text:
             return False
-        # сначала блок «Специализация / Уровень / Опыт», затем сам текст вакансии
         parts = [text_of(soup.select_one(".vacancy__info-block")), text]
         vacancy.description = "\n".join(p for p in parts if p)
         return True
 
     def page_url(self, query: str, page: int) -> str:
-        # поиска по тексту у сайта нет: отдаётся весь список IT-вакансий
         return f"{BASE}/?page={page}"
 
     def parse(self, html: str) -> list[RawVacancy]:
         vacancies = []
         for item in self.soup(html).select(".vacancies-list-item"):
             link = item.select_one("a.vacancies-list-item__link_block")
-            if link is None:  # рекламная вставка в списке
+            if link is None:
                 continue
             tags = [text_of(t) for t in item.select(".vacancies-list-item__technology-tag__name")]
             vacancies.append(

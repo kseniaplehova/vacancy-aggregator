@@ -26,7 +26,6 @@ DESCRIPTION = (
     "Работа в офисе в Минске, гибкий график, оплачиваемый отпуск и больничный, обучение за счёт компании."
 )
 ORIGINAL = record("Python-разработчик (по работе с ИИ-агентами)", "ИП Жук Антон Геннадьевич", DESCRIPTION)
-# та же вакансия у агрегатора: другая запись компании, у описания обрезано начало
 COPY = record("Python-разработчик (по работе с ИИ-агентами)", "Жук Антон Геннадьевич", DESCRIPTION[40:])
 OTHER = record(
     "Бухгалтер по расчёту заработной платы",
@@ -74,11 +73,10 @@ def test_jaccard():
 
 def test_minhash_estimates_jaccard():
     a = {f"слово{i}" for i in range(0, 300)}
-    b = {f"слово{i}" for i in range(100, 400)}  # настоящий коэффициент Жаккара — 0.5
+    b = {f"слово{i}" for i in range(100, 400)}
     hasher = MinHasher(size=256)
     assert estimate(hasher.signature(a), hasher.signature(b)) == pytest.approx(0.5, abs=0.1)
     assert estimate(hasher.signature(a), hasher.signature(a)) == 1.0
-    # сигнатура не зависит от запуска программы
     assert hasher.signature(a) == MinHasher(size=256).signature(a)
 
 

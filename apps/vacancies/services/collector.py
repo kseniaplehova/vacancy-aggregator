@@ -19,13 +19,10 @@ HEADERS = {
 
 @dataclass
 class SourceReport:
-    """Чем закончился опрос одного источника."""
-
     source: str
     seconds: float
     vacancies: list[RawVacancy] = field(default_factory=list)
     error: str | None = None
-    #: вакансии, оставшиеся без полного описания: причина → количество
     detail_errors: dict[str, int] = field(default_factory=dict)
 
 
@@ -47,12 +44,11 @@ async def _poll(
     details: bool,
     skip_details: Collection[str],
 ) -> SourceReport:
-    """Опрашивает источник; ошибка не выбрасывается, а попадает в отчёт."""
     started = time.perf_counter()
     try:
         vacancies = await source.fetch(client, query, pages, details=details, skip_details=skip_details)
         error = None
-    except Exception as exc:  # сбой одного источника не должен ронять остальные
+    except Exception as exc:
         vacancies = []
         error = f"{type(exc).__name__}: {exc}"
     detail_errors = dict(getattr(source, "detail_errors", {}))
@@ -68,17 +64,8 @@ async def collect(
     details: bool = False,
     known: Mapping[str, Collection[str]] | None = None,
 ) -> CollectResult:
-    """Собирает вакансии со всех источников.
-
-    ``concurrent=False`` опрашивает источники по очереди — этот режим нужен
-    для сравнения с асинхронным в экспериментах. ``details=True`` дополнительно
-    загружает страницу каждой вакансии ради полного описания. ``known`` —
-    номера вакансий по источникам, описание которых уже есть: их страницы
-    не запрашиваются повторно.
-    """
     known = known or {}
     async with httpx.AsyncClient(headers=HEADERS, follow_redirects=True, timeout=30) as client:
-        # время считается без создания клиента: оно одинаково в обоих режимах
         started = time.perf_counter()
         polls = [_poll(s, client, query, pages, details, known.get(s.name, ())) for s in sources]
         if concurrent:

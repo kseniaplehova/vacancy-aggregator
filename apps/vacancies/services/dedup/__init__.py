@@ -6,7 +6,6 @@ from .vectors import TfidfKeyMatcher, TfidfTextMatcher
 
 
 def all_matchers() -> list[Matcher]:
-    """Все методы, которые сравниваются в работе."""
     return [
         LevenshteinMatcher(),
         JaccardKeyMatcher(),

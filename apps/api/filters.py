@@ -16,14 +16,11 @@ class VacancyFilter(filters.FilterSet):
         fields = ["q", "city", "source", "has_salary"]
 
     def filter_q(self, queryset, name, value):
-        # ищем по заранее нормализованному тексту: SQLite не умеет сравнивать
-        # кириллицу без учёта регистра, а так «Аналитик» и «аналитик» совпадают
         for word in normalize(value).split():
             queryset = queryset.filter(search_text__contains=word)
         return queryset
 
     def filter_source(self, queryset, name, value):
-        # вакансия подходит, если в этом источнике есть она сама или её дубликат
         return queryset.filter(Q(source=value) | Q(duplicates__source=value)).distinct()
 
     def filter_has_salary(self, queryset, name, value):

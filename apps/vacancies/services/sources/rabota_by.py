@@ -10,11 +10,8 @@ VACANCY_ID = re.compile(r"/vacancy/(\d+)")
 
 class RabotaBy(Source):
     name = "rabota.by"
-    #: код Беларуси в справочнике регионов сайта
     area = 16
     has_details = True
-    # при частых запросах сайт показывает проверку «я не робот», поэтому
-    # страницы вакансий загружаются по одной и с паузой
     details_limit = 1
     delay = 2.0
 
@@ -28,7 +25,6 @@ class RabotaBy(Source):
         return True
 
     def page_url(self, query: str, page: int) -> str:
-        # на сайте страницы нумеруются с нуля
         params = {"text": query, "area": self.area, "page": page - 1}
         return f"https://rabota.by/search/vacancy?{urlencode(params)}"
 
@@ -43,7 +39,6 @@ class RabotaBy(Source):
                 RawVacancy(
                     source=self.name,
                     source_id=match.group(1),
-                    # без параметров поиска: адрес одной вакансии должен быть одинаковым
                     url=urlsplit(link["href"])._replace(query="").geturl(),
                     title=text_of(link),
                     company=text_of(card.select_one('[data-qa="vacancy-serp__vacancy-employer-text"]')),
@@ -60,7 +55,6 @@ class RabotaBy(Source):
 
     @staticmethod
     def _salary(card) -> str | None:
-        # у зарплаты нет своей метки, поэтому ищем самый короткий текст с числом и валютой
         found = [t for t in map(text_of, card.find_all("span")) if t and SALARY.match(_strip_prefix(t))]
         return min(found, key=len) if found else None
 

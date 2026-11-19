@@ -14,13 +14,10 @@ from .serializers import SavedSearchSerializer, VacancyListSerializer, VacancySe
 
 
 def main_vacancies():
-    """Вакансии без дубликатов: каждая группа представлена основной записью."""
     return Vacancy.objects.filter(duplicate_of__isnull=True).prefetch_related("duplicates")
 
 
 class FavoriteContextMixin:
-    """Передаёт сериализатору номера избранных вакансий текущего пользователя."""
-
     def get_serializer_context(self):
         context = super().get_serializer_context()
         user = self.request.user
@@ -30,8 +27,6 @@ class FavoriteContextMixin:
 
 
 class VacancyViewSet(FavoriteContextMixin, viewsets.ReadOnlyModelViewSet):
-    """Список вакансий с поиском и отбором, одна вакансия, добавление в избранное."""
-
     queryset = main_vacancies()
     pagination_class = VacancyPagination
     filter_backends = (DjangoFilterBackend, OrderingFilter)
@@ -53,8 +48,6 @@ class VacancyViewSet(FavoriteContextMixin, viewsets.ReadOnlyModelViewSet):
 
 
 class FavoriteViewSet(FavoriteContextMixin, mixins.ListModelMixin, viewsets.GenericViewSet):
-    """Избранные вакансии текущего пользователя, сначала добавленные последними."""
-
     serializer_class = VacancyListSerializer
     permission_classes = (permissions.IsAuthenticated,)
     pagination_class = VacancyPagination
@@ -68,8 +61,6 @@ class FavoriteViewSet(FavoriteContextMixin, mixins.ListModelMixin, viewsets.Gene
 
 
 class SavedSearchViewSet(viewsets.ModelViewSet):
-    """Сохранённые критерии отбора текущего пользователя."""
-
     serializer_class = SavedSearchSerializer
     permission_classes = (permissions.IsAuthenticated,)
     pagination_class = None
@@ -82,8 +73,6 @@ class SavedSearchViewSet(viewsets.ModelViewSet):
 
 
 class FilterOptionsView(APIView):
-    """Значения для выпадающих списков: источники и города с числом вакансий."""
-
     def get(self, request):
         vacancies = main_vacancies()
 

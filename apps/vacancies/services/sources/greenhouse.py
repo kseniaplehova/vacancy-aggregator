@@ -6,12 +6,6 @@ from .base import BELARUS, Source, html_to_text, local_city
 
 
 class Greenhouse(Source):
-    """Карьерная страница компании на сервисе найма Greenhouse.
-
-    Сервис отдаёт все вакансии компании одним JSON-ответом вместе с описаниями,
-    поэтому ни листать страницы, ни ходить за подробностями не нужно.
-    """
-
     paginated = False
 
     def __init__(self, board: str):
@@ -25,7 +19,6 @@ class Greenhouse(Source):
         vacancies = []
         for job in json.loads(text)["jobs"]:
             location = job.get("location", {}).get("name") or ""
-            # компании международные, оставляем только белорусские вакансии
             if not BELARUS.search(location):
                 continue
             vacancies.append(
@@ -36,7 +29,6 @@ class Greenhouse(Source):
                     title=job["title"].strip(),
                     company=job.get("company_name"),
                     city=local_city(location),
-                    # описание приходит как разметка с заменёнными спецсимволами
                     description=html_to_text(html.unescape(job.get("content") or "")),
                     published=job.get("first_published") or job.get("updated_at"),
                 )

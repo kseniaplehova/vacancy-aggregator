@@ -10,9 +10,7 @@ from bs4 import BeautifulSoup, Tag
 
 from ..schemas import RawVacancy
 
-#: города и названия страны, по которым вакансию считаем белорусской
 BELARUS = re.compile(r"belarus|minsk|brest|grodno|gomel|vitebsk|mogilev|беларус|минск", re.IGNORECASE)
-#: русские названия для городов, которые международные компании пишут по-английски
 CITY_NAMES = {
     "minsk": "Минск",
     "brest": "Брест",
@@ -26,30 +24,21 @@ BLOCK_TAGS =["p", "div", "li", "ul", "ol", "h1", "h2", "h3", "h4", "h5", "h6", "
 
 
 def text_of(tag: Tag | None, sep: str = " ") -> str | None:
-    """Текст элемента без лишних пробелов; None, если элемента или текста нет.
-
-    ``sep`` вставляется между вложенными элементами. Пустой нужен там, где сайт
-    подсвечивает слова запроса тегами внутри слова: «<b>Python</b>-разработчик».
-    """
     if tag is None:
         return None
     return " ".join(tag.get_text(sep).split()) or None
 
 
 def local_city(name: str | None) -> str | None:
-    """«Minsk» → «Минск», чтобы один город не числился под двумя названиями."""
     if not name:
         return None
     return CITY_NAMES.get(name.strip().lower(), name.strip())
 
 
 def html_to_text(html: str | None) -> str | None:
-    """Убирает разметку из описания вакансии, сохраняя разбиение на строки."""
     if not html:
         return None
     soup = BeautifulSoup(html, "lxml")
-    # перенос строки ставится только на границах абзацев и пунктов списка,
-    # иначе каждое выделенное слово оказалось бы на отдельной строке
     for tag in soup.find_all(BLOCK_TAGS):
         tag.append("\n")
     for tag in soup.find_all("br"):
@@ -59,7 +48,6 @@ def html_to_text(html: str | None) -> str | None:
 
 
 def job_posting(soup: BeautifulSoup) -> dict | None:
-    """Блок schema.org/JobPosting, который сайты кладут в страницу для поисковиков."""
     for script in soup.select('script[type="application/ld+json"]'):
         try:
             data = json.loads(script.string or "")
@@ -71,38 +59,25 @@ def job_posting(soup: BeautifulSoup) -> dict | None:
 
 
 class SourceBlocked(Exception):
-    """Сайт распознал автоматические запросы и требует подтвердить, что запрос делает человек."""
+    pass
 
 
 class Source(ABC):
-    """Источник вакансий.
-
-    Чтобы добавить новый источник, достаточно унаследоваться, задать ``name``
-    и реализовать ``page_url`` и ``parse``; обход страниц уже есть в ``fetch``.
-    Если полное описание лежит на странице вакансии, дополнительно
-    переопределяется ``parse_detail`` и выставляется ``has_details``.
-    """
-
     name: str
-    #: пауза между запросами к одному сайту, чтобы не нагружать его
     delay: float = 1.0
-    #: False — весь список приходит одним ответом, листать нечего
     paginated: bool = True
-    #: True — за полным описанием нужно идти на страницу вакансии
     has_details: bool = False
-    #: сколько страниц вакансий одного сайта загружается одновременно
     details_limit: int = 3
 
     @abstractmethod
     def page_url(self, query: str, page: int) -> str:
-        """Адрес страницы списка; ``page`` считается с единицы."""
+        pass
 
     @abstractmethod
     def parse(self, text: str) -> list[RawVacancy]:
-        """Достаёт вакансии из одной страницы списка (разметка или JSON)."""
+        pass
 
     def parse_detail(self, html: str, vacancy: RawVacancy) -> bool:
-        """Дополняет вакансию данными с её страницы; False — описания на странице нет."""
         return False
 
     async def fetch(
@@ -114,12 +89,6 @@ class Source(ABC):
         details: bool = False,
         skip_details: Collection[str] = (),
     ) -> list[RawVacancy]:
-        """Собирает вакансии источника.
-
-        ``skip_details`` — номера вакансий, полное описание которых уже известно:
-        их страницы повторно не запрашиваются.
-        """
-        #: почему не удалось получить описание: причина → число вакансий
         self.detail_errors: Counter[str] = Counter()
         vacancies: list[RawVacancy] = []
         seen: set[str] = set()
@@ -127,7 +96,6 @@ class Source(ABC):
             if page > 1:
                 await asyncio.sleep(self.delay)
             text = await self.get(client, self.page_url(query, page))
-            # страница без новых вакансий — список закончился
             fresh = [v for v in self.parse(text) if v.source_id not in seen]
             if not fresh:
                 break
@@ -138,7 +106,6 @@ class Source(ABC):
         return vacancies
 
     async def get(self, client: httpx.AsyncClient, url: str) -> str:
-        """Загружает страницу; если сайт вместо неё показал проверку «я не робот» — SourceBlocked."""
         response = await client.get(url)
         response.raise_for_status()
         if "captcha" in response.url.path:
@@ -146,7 +113,6 @@ class Source(ABC):
         return response.text
 
     async def load_detail(self, client: httpx.AsyncClient, vacancy: RawVacancy) -> bool:
-        """Загружает страницу вакансии и дополняет вакансию её данными."""
         return self.parse_detail(await self.get(client, vacancy.url), vacancy)
 
     async def _fetch_details(self, client: httpx.AsyncClient, vacancies: list[RawVacancy]) -> None:
@@ -157,10 +123,8 @@ class Source(ABC):
             nonlocal blocked
             async with limit:
                 if blocked:
-                    # сайт попросил остановиться: оставшиеся страницы не запрашиваем
                     self.detail_errors["пропущено после проверки «я не робот»"] += 1
                     return
-                # при сбое вакансия остаётся с данными из списка, а причина попадает в отчёт
                 try:
                     vacancy.detailed = await self.load_detail(client, vacancy)
                     if not vacancy.detailed:

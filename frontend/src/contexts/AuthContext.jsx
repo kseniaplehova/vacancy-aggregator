@@ -6,7 +6,6 @@ const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  // пока не проверили сохранённый вход, страницы «только для вошедших» не решают, пускать или нет
   const [loading, setLoading] = useState(api.isSignedIn());
 
   useEffect(() => {

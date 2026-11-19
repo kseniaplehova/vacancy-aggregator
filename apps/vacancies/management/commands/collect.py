@@ -10,7 +10,6 @@ from apps.vacancies.services.collector import collect
 from apps.vacancies.services.sources import default_sources
 from apps.vacancies.services.storage import deduplicate, known_details, save_vacancies
 
-#: пауза между поисковыми запросами, чтобы не нагружать сайты
 PAUSE_BETWEEN_QUERIES = 5
 
 
@@ -59,7 +58,6 @@ class Command(BaseCommand):
                 options["pages"],
                 concurrent=not options["sequential"],
                 details=options["details"],
-                # страницы вакансий, уже загруженные в прошлые разы, повторно не запрашиваются
                 known=known_details() if options["details"] else None,
             )
         )

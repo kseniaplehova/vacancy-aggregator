@@ -6,8 +6,6 @@ from apps.vacancies.services.sources import Source
 
 
 class Fake(Source):
-    """Источник без сети: ждёт ``wait`` секунд и отдаёт одну вакансию."""
-
     def __init__(self, name: str, wait: float = 0.0, fail: bool = False):
         self.name, self.wait, self.fail = name, wait, fail
 
@@ -41,5 +39,5 @@ def test_concurrent_is_faster_than_sequential():
     concurrent = run(sources)
     sequential = run(sources, concurrent=False)
     assert len(concurrent.vacancies) == len(sequential.vacancies) == 4
-    assert sequential.seconds > 0.75  # четыре ожидания подряд
-    assert concurrent.seconds < 0.5  # ожидания идут одновременно
+    assert sequential.seconds > 0.75
+    assert concurrent.seconds < 0.5

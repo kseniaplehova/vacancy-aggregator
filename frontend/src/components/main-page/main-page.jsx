@@ -12,7 +12,6 @@ import styles from "./main-page.module.css";
 const PAGE_SIZE = 20;
 
 export default function MainPage() {
-  // критерии отбора живут в адресе страницы: ссылкой можно поделиться, кнопка «назад» работает
   const [params, setParams] = useSearchParams();
   const filters = {
     q: params.get("q") || "",
@@ -37,7 +36,7 @@ export default function MainPage() {
 
   const key = params.toString();
   useEffect(() => {
-    let cancelled = false; // ответ на устаревший запрос не должен затереть свежий
+    let cancelled = false;
     setLoading(true);
     api
       .vacancies({ ...filters, page })
@@ -51,14 +50,12 @@ export default function MainPage() {
     return () => {
       cancelled = true;
     };
-    // после входа или выхода список перезапрашивается: меняются отметки «в избранном»
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key, user?.id]);
 
   function update(changes) {
     const next = { ...filters, ...changes };
     const clean = Object.fromEntries(Object.entries(next).filter(([, value]) => value));
-    setParams(clean); // любая смена критериев возвращает на первую страницу
+    setParams(clean);
   }
 
   function goToPage(number) {

@@ -9,7 +9,6 @@ SALARY = re.compile(r"\d.*(BYN|USD|EUR|RUB)")
 
 class MyJob(Source):
     name = "myjob.by"
-    #: раздел сайта; поиск по тексту находит слишком мало, поэтому берётся весь раздел IT
     category = "it-internet-telekom"
     has_details = True
 
@@ -36,7 +35,6 @@ class MyJob(Source):
             vacancies.append(
                 RawVacancy(
                     source=self.name,
-                    # в конце адреса — идентификатор вакансии
                     source_id=href.rsplit("-", 1)[-1],
                     url=BASE + href,
                     title=title,

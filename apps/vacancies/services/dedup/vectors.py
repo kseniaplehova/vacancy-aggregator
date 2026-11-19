@@ -1,4 +1,3 @@
-"""Векторное представление текста (TF-IDF) и косинусное сходство."""
 import math
 from collections import Counter
 
@@ -9,13 +8,6 @@ Vector = dict[str, float]
 
 
 def tfidf_vectors(documents: list[list[str]]) -> list[Vector]:
-    """Превращает документы в векторы единичной длины.
-
-    Координата слова — его частота в документе (TF), умноженная на редкость
-    слова во всём наборе (IDF): слово «python», которое есть почти везде, весит
-    мало, а редкое название компании — много. Вектор хранится разреженно:
-    только слова, которые в документе встречаются.
-    """
     total = len(documents)
     document_frequency = Counter(word for document in documents for word in set(document))
     vectors = []
@@ -30,7 +22,6 @@ def tfidf_vectors(documents: list[list[str]]) -> list[Vector]:
 
 
 def cosine(a: Vector, b: Vector) -> float:
-    """Косинус угла между векторами единичной длины — их скалярное произведение."""
     if len(a) > len(b):
         a, b = b, a
     return sum(weight * b.get(word, 0.0) for word, weight in a.items())

@@ -14,8 +14,6 @@ def raw(source_id="1", source="rabota.by", **fields):
 @pytest.mark.django_db
 def test_save_adds_then_updates():
     first = save_vacancies([raw("1", description="полный текст"), raw("2")])
-    # повторный сбор: та же вакансия без описания, одна новая
-    # и вакансия с тем же номером из другого источника
     second = save_vacancies([raw("1", salary="от 4 000 BYN"), raw("3"), raw("1", source="belmeta.com")])
 
     assert first == (2, 0)
@@ -24,7 +22,7 @@ def test_save_adds_then_updates():
 
     vacancy = Vacancy.objects.get(source="rabota.by", source_id="1")
     assert vacancy.salary == "от 4 000 BYN"
-    assert vacancy.description == "полный текст"  # не затёрлось пустым значением
+    assert vacancy.description == "полный текст"
     assert vacancy.last_seen > vacancy.first_seen
 
 

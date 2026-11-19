@@ -25,7 +25,6 @@ export default function FavoritesPage() {
     };
   }, [page]);
 
-  // убранная из избранного вакансия сразу исчезает из списка
   function handleChange(id, isFavorite) {
     if (isFavorite) return;
     setData((current) => ({

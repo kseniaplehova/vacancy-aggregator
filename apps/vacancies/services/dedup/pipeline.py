@@ -1,4 +1,3 @@
-"""Поиск дубликатов среди всех собранных вакансий и объединение их в группы."""
 from collections import defaultdict
 from dataclasses import dataclass
 from typing import Any, Sequence
@@ -6,16 +5,12 @@ from typing import Any, Sequence
 from .jaccard import jaccard
 from .normalize import char_shingles, normalize, normalize_company
 
-#: с какой похожести названий две вакансии одной компании считаются одной и той же
 TITLE_THRESHOLD = 0.8
-#: слово, встречающееся в названиях стольких компаний, компанию не определяет («групп», «компания»)
 COMMON_WORD_LIMIT = 50
 
 
 @dataclass
 class Prepared:
-    """Вакансия в виде, готовом к сравнению; строится один раз."""
-
     record: Any
     title: set[str]
     company: frozenset[str]
@@ -32,21 +27,14 @@ def prepare(record: Any) -> Prepared:
 
 
 def same_company(a: frozenset[str], b: frozenset[str]) -> bool:
-    """«Аливария» и «ОАО Пивоваренная компания Аливария» — одна компания.
-
-    Порог выше половины: «Ивьевская средняя школа» и «Геранёнская средняя школа»
-    совпадают двумя словами из четырёх, но это разные организации.
-    """
     if not a or not b:
         return False
     return a <= b or b <= a or jaccard(set(a), set(b)) >= 0.6
 
 
 def is_duplicate(a: Prepared, b: Prepared) -> bool:
-    """Две записи из разных источников описывают одну вакансию."""
     if a.record.source == b.record.source:
         return False
-    # агрегатор сам назвал первоисточник — совпадение точное, сравнивать тексты не нужно
     if a.record.origin_url == b.record.url or b.record.origin_url == a.record.url:
         return True
     if a.city and b.city and a.city != b.city:
@@ -55,13 +43,6 @@ def is_duplicate(a: Prepared, b: Prepared) -> bool:
 
 
 def candidate_pairs(prepared: Sequence[Prepared]) -> set[tuple[int, int]]:
-    """Пары, которые имеет смысл сравнивать.
-
-    Перебор всех пар растёт как квадрат числа вакансий. Вместо него строится
-    указатель «слово из названия компании → вакансии», и сравниваются только
-    вакансии, у которых есть общее слово. Пары, связанные прямой ссылкой
-    на первоисточник, добавляются всегда.
-    """
     by_word: dict[str, list[int]] = defaultdict(list)
     by_url: dict[str, int] = {}
     for index, item in enumerate(prepared):
@@ -82,17 +63,12 @@ def candidate_pairs(prepared: Sequence[Prepared]) -> set[tuple[int, int]]:
 
 
 def group_duplicates(records: Sequence[Any]) -> list[list[Any]]:
-    """Группы записей об одной вакансии (в группе не меньше двух записей).
-
-    Если A дублирует B, а B дублирует C, все три попадают в одну группу:
-    пары объединяются системой непересекающихся множеств.
-    """
     prepared = [prepare(record) for record in records]
     parent = list(range(len(prepared)))
 
     def find(index: int) -> int:
         while parent[index] != index:
-            parent[index] = parent[parent[index]]  # сжатие пути
+            parent[index] = parent[parent[index]]
             index = parent[index]
         return index
 
@@ -107,11 +83,6 @@ def group_duplicates(records: Sequence[Any]) -> list[list[Any]]:
 
 
 def choose_main(group: Sequence[Any]) -> Any:
-    """Запись, которая будет показана пользователю вместо всей группы.
-
-    Предпочтение — первоисточнику перед агрегатором, затем записи с полным
-    и более длинным описанием, затем той, что появилась раньше.
-    """
     return min(
         group,
         key=lambda r: (bool(r.origin), not r.detailed, -len(r.description or ""), r.first_seen, r.pk),

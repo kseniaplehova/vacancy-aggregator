@@ -1,5 +1,3 @@
-// Обёртка над запросами к серверу: адреса, токены входа, разбор ошибок.
-
 const BASE = "/api/v1";
 const STORAGE_KEY = "vacancy-aggregator-tokens";
 
@@ -20,7 +18,6 @@ function saveTokens(value) {
     if (value) localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
     else localStorage.removeItem(STORAGE_KEY);
   } catch {
-    // хранилище недоступно (например, приватный режим) — вход проживёт до закрытия вкладки
   }
 }
 
@@ -32,7 +29,6 @@ export class ApiError extends Error {
   }
 }
 
-// Сервер отдаёт ошибки как {поле: [сообщения]} или {detail: "..."} — собираем их в одну строку.
 function describe(data) {
   if (!data) return "";
   if (typeof data === "string") return data;
@@ -60,7 +56,6 @@ async function send(path, { method = "GET", body, auth = true } = {}) {
   return data;
 }
 
-// Короткоживущий токен истёк — получаем новый по долгоживущему.
 async function refresh() {
   if (!tokens?.refresh) return false;
   try {

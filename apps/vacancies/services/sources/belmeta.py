@@ -18,7 +18,6 @@ class Belmeta(Source):
         if not description:
             return False
         vacancy.description = description
-        # у вакансий с других площадок кнопка отклика называет первоисточник: «Отклик на rabota.by»
         apply = soup.select_one('a[href*="/jrd?"]')
         label = text_of(apply)
         if label and " на " in label:
@@ -29,7 +28,6 @@ class Belmeta(Source):
     async def load_detail(self, client: httpx.AsyncClient, vacancy: RawVacancy) -> bool:
         found = await super().load_detail(client, vacancy)
         if vacancy.origin_url:
-            # кнопка отклика перенаправляет на первоисточник: берём адрес, не переходя по нему
             response = await client.get(vacancy.origin_url, follow_redirects=False)
             target = response.headers.get("location")
             vacancy.origin_url = urlsplit(target)._replace(query="").geturl() if target else None

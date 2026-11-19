@@ -26,7 +26,6 @@ def parse(file: str) -> list[RawVacancy]:
 
 
 def detail(source, file: str) -> RawVacancy:
-    """Пустая вакансия, дополненная данными с сохранённой страницы."""
     vacancy = RawVacancy(source=source.name, source_id="1", url="https://example.org", title="x")
     source.parse_detail(read(file), vacancy)
     return vacancy
@@ -64,7 +63,7 @@ def test_rabota_by_detail():
 
 def test_devby_skips_banner():
     vacancies = parse("devby.html")
-    assert len(vacancies) == 6  # седьмой элемент списка — рекламная вставка
+    assert len(vacancies) == 6
     assert vacancies[0].title == "Rust Blockchain Developer"
     assert vacancies[0].salary == "$1500—4000"
     assert vacancies[1].salary is None
@@ -80,7 +79,6 @@ def test_devby_detail():
 def test_belmeta():
     first = parse("belmeta.html")[0]
     assert first.source_id == "15772120"
-    # слово запроса подсвечено тегом, пробел внутри названия появиться не должен
     assert first.title == "Python-разработчик (по работе с ИИ-агентами)"
     assert first.company == "Жук Антон Геннадьевич"
     assert first.city == "Минск"
@@ -92,7 +90,6 @@ def test_belmeta():
 def test_belmeta_detail_names_origin():
     vacancy = detail(Belmeta(), "belmeta_detail.html")
     assert vacancy.origin == "rabota.by"
-    # до запроса к сайту здесь адрес кнопки отклика; настоящий адрес подставляет load_detail
     assert vacancy.origin_url == "https://belmeta.com/jrd?id=15772120&src=js"
     assert "FastAPI" in vacancy.description
     assert len(vacancy.description) > 3000
@@ -115,7 +112,6 @@ def test_myjob_detail():
 
 def test_greenhouse_keeps_only_belarus():
     vacancies = parse("greenhouse.json")
-    # в образце три вакансии: одна лондонская и две минские
     assert [v.city for v in vacancies] == ["Минск", "Минск"]
     first = vacancies[0]
     assert first.title == "Data Analyst"
@@ -127,7 +123,6 @@ def test_greenhouse_keeps_only_belarus():
 
 def test_lever_keeps_only_belarus():
     vacancies = parse("lever.json")
-    # в образце три вакансии: одна тбилисская и две минские
     assert [v.title for v in vacancies] == [
         "Engineering Manager (Node.js/Vue.js) - POS Systems",
         "Junior/Middle DevOps",

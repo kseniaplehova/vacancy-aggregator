@@ -7,8 +7,6 @@ from apps.vacancies.services.sources import Source
 
 
 class Pages(Source):
-    """Источник с пятью вакансиями; страницы отдаёт поддельный сервер из теста."""
-
     name = "pages"
     has_details = True
     details_limit = 1
@@ -77,7 +75,6 @@ def test_captcha_stops_further_requests():
         return httpx.Response(200, text="полное описание")
 
     source, vacancies = collect(handler)
-    # после проверки «я не робот» страницы 3–5 уже не запрашиваются
     assert requested == ["/list", "/vacancy/1", "/vacancy/2", "/account/captcha"]
     assert [v.detailed for v in vacancies] == [True, False, False, False, False]
     assert source.detail_errors == {

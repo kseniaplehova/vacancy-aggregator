@@ -9,7 +9,6 @@ class Command(BaseCommand):
     help = "Заново размечает дубликаты среди всех вакансий в базе."
 
     def handle(self, *args, **options):
-        # текст для поиска пересчитывается заодно: он строится теми же правилами нормализации
         vacancies = list(Vacancy.objects.all())
         for vacancy in vacancies:
             vacancy.search_text = text_of(vacancy)

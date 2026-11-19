@@ -15,7 +15,6 @@ class Command(BaseCommand):
     )
 
     def handle(self, *args, **options):
-        # вакансии без описания в сравнение не идут: методам, работающим с текстом, на них нечего сравнивать
         with_text = Vacancy.objects.exclude(description__isnull=True).exclude(description="")
         skipped = Vacancy.objects.filter(source=ORIGIN).count() - with_text.filter(source=ORIGIN).count()
         if skipped:
@@ -24,8 +23,6 @@ class Command(BaseCommand):
         originals = list(with_text.filter(source=ORIGIN).order_by("id"))
         index_by_url = {vacancy.url: index for index, vacancy in enumerate(originals)}
 
-        # берём только те вакансии агрегатора, чей первоисточник есть в базе:
-        # для остальных правильный ответ «дубликата нет» проверить нечем
         copies, gold = [], set()
         for vacancy in with_text.filter(source=AGGREGATOR, origin=ORIGIN).order_by("id"):
             if vacancy.origin_url in index_by_url:

@@ -78,12 +78,12 @@ def test_duplicate_is_not_available_as_separate_vacancy(client, vacancies):
 @pytest.mark.parametrize(
     "params, expected",
     [
-        ({"q": "аналитик"}, ["Аналитик продаж"]),  # регистр кириллицы не важен
-        ({"q": "PYTHON авансум"}, ["Python-разработчик"]),  # все слова должны встретиться
-        ({"q": "fastapi"}, ["Python-разработчик"]),  # поиск идёт и по описанию
+        ({"q": "аналитик"}, ["Аналитик продаж"]),
+        ({"q": "PYTHON авансум"}, ["Python-разработчик"]),
+        ({"q": "fastapi"}, ["Python-разработчик"]),
         ({"q": "бухгалтер"}, []),
         ({"city": "Гомель"}, ["Аналитик продаж"]),
-        ({"source": "belmeta.com"}, ["Python-разработчик"]),  # источник дубликата тоже считается
+        ({"source": "belmeta.com"}, ["Python-разработчик"]),
         ({"source": "rabota.by"}, ["Python-разработчик"]),
         ({"has_salary": "true"}, ["Python-разработчик"]),
         ({"has_salary": "false"}, ["Java developer", "Аналитик продаж"]),
@@ -105,7 +105,6 @@ def test_filter_options(client, vacancies):
 def test_registration_login_and_profile(client):
     payload = {"username": "ksenia", "email": "ksenia@example.org", "password": "S3cure-passw0rd"}
     assert client.post("/api/v1/auth/users/", payload).status_code == 201
-    # слишком простой пароль и повторная почта отклоняются
     assert client.post("/api/v1/auth/users/", {**payload, "username": "other", "password": "12345"}).status_code == 400
     assert client.post("/api/v1/auth/users/", {**payload, "username": "other"}).status_code == 400
 
@@ -128,7 +127,7 @@ def test_personal_endpoints_require_login(client, vacancies):
 def test_favorites(auth_client, user, vacancies):
     pk = vacancies["Java developer"].pk
     assert auth_client.post(f"/api/v1/vacancies/{pk}/favorite/").status_code == 201
-    assert auth_client.post(f"/api/v1/vacancies/{pk}/favorite/").status_code == 200  # повтор не создаёт вторую запись
+    assert auth_client.post(f"/api/v1/vacancies/{pk}/favorite/").status_code == 200
     assert Favorite.objects.filter(user=user).count() == 1
 
     assert titles(auth_client.get("/api/v1/favorites/")) == ["Java developer"]

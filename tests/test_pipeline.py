@@ -40,15 +40,10 @@ def test_company_written_differently_still_matches():
 def test_what_must_not_be_grouped():
     base = record("rabota.by", "Инженер-программист (C++ разработчик)", "Государственное предприятие НЦОТ")
     not_duplicates = [
-        # похожее, но другое название у той же компании
         record("belmeta.com", "Инженер-программист (Rust-разработчик)", "Государственное предприятие НЦОТ"),
-        # то же название у другой компании
         record("myjob.by", "Инженер-программист (C++ разработчик)", "ООО Ромашка"),
-        # та же вакансия в другом городе
         record("jobs.devby.io", "Инженер-программист (C++ разработчик)", "НЦОТ", city="Гомель"),
-        # название компании совпадает наполовину, города нет
         record("lever:idt", "Инженер-программист (C++ разработчик)", "Государственное предприятие БелТест", city=None),
-        # тот же источник: повторы внутри одного источника не объединяются
         record("rabota.by", "Инженер-программист (C++ разработчик)", "Государственное предприятие НЦОТ"),
     ]
     assert group_duplicates([base, *not_duplicates]) == []
@@ -99,10 +94,8 @@ def test_deduplicate_marks_duplicates_and_moves_favorites(django_user_model):
     copy.refresh_from_db()
     assert copy.duplicate_of == main
     assert Vacancy.objects.filter(duplicate_of__isnull=True).count() == 2
-    # избранное переехало с дубликата на основную запись
     assert list(Favorite.objects.values_list("vacancy_id", flat=True)) == [main.pk]
 
-    # вакансия изменилась и перестала быть дубликатом — разметка снимается
     Vacancy.objects.filter(pk=copy.pk).update(title="Совсем другая вакансия", company="Другая компания")
     assert deduplicate() == (0, 0)
     copy.refresh_from_db()

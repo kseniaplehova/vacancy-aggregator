@@ -30,7 +30,6 @@ export default function VacancyCard({ vacancy, onFavoriteChange }) {
   );
 }
 
-// Все площадки, где опубликована вакансия: первая — основная запись, остальные — её дубликаты.
 export function SourceLinks({ sources }) {
   return (
     <ul className={styles.sources} aria-label="Где опубликована">

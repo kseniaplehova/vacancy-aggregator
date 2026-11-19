@@ -21,7 +21,7 @@ export default function FavoriteButton({ vacancyId, initial, onChange, withLabel
     }
     setBusy(true);
     const next = !active;
-    setActive(next); // сразу показываем результат, при ошибке вернём как было
+    setActive(next);
     try {
       await (next ? api.addFavorite(vacancyId) : api.removeFavorite(vacancyId));
       onChange?.(next);

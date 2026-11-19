@@ -3,12 +3,6 @@ from django.db import models
 
 
 class Vacancy(models.Model):
-    """Вакансия, собранная из источника.
-
-    Зарплата и дата публикации хранятся строкой: источники записывают их
-    по-разному («от 4 000 BYN», «$1500—4000», «Сегодня»).
-    """
-
     source = models.CharField("источник", max_length=64, db_index=True)
     source_id = models.CharField("номер в источнике", max_length=128)
     url = models.URLField("ссылка", max_length=500)
@@ -61,7 +55,6 @@ class Vacancy(models.Model):
         verbose_name_plural = "вакансии"
         ordering = ["-last_seen", "-id"]
         constraints = [
-            # одна и та же вакансия источника хранится один раз
             models.UniqueConstraint(fields=["source", "source_id"], name="unique_vacancy_in_source"),
         ]
 
@@ -70,8 +63,6 @@ class Vacancy(models.Model):
 
 
 class Favorite(models.Model):
-    """Вакансия, которую пользователь отметил как интересную."""
-
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, verbose_name="пользователь", on_delete=models.CASCADE, related_name="favorites"
     )
@@ -93,8 +84,6 @@ class Favorite(models.Model):
 
 
 class SavedSearch(models.Model):
-    """Сохранённые критерии отбора: по ним пользователь видит только подходящие вакансии."""
-
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, verbose_name="пользователь", on_delete=models.CASCADE, related_name="searches"
     )
